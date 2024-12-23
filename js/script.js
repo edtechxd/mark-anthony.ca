@@ -12,7 +12,7 @@ function toggleMenu() {
 
 // JavaScript Ticker
 const tickerTexts = [
-  "📱 tap-tap-scroll-click… Rotting",
+  "📱 scroll-scroll-tap… Rot",
   "🧘🏾‍♂️ Wellness: Meditating",
   "📚 Reading: Ikigai",
   "🏃🏾‍➡️ Running: Peloton 30 min HIIT",
@@ -34,7 +34,7 @@ const tickerTexts = [
   "✍🏾 Writing: Design Tutorials",
   "👨🏾‍💻 Working: App Design",
   
-  "📱 click-click… Joining Meeting",
+  "📱 click-tap… Join Meeting",
   "🧘🏾‍♂️ Wellness: Yoga",
   "📚 Reading: Ichigo Ichie",
   "🏃🏾‍➡️ Running: 5km Pace",

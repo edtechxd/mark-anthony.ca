@@ -28,7 +28,7 @@ Your site is designed with accessibility, responsiveness, and user experience in
 - **Generative AI**
 
 ## Tags  
-`Portfolio`, `Design Education`, `Creative Tutorials`, `Graphic Design`, `UI/UX`, `Teaching Design`, `HTML`, `CSS`, `Graphic Design`, `GitHub Pages`, `Podcast`, `How'd We get Here?`, `Blog`, `Education Technology`, `Experience Design`,`Mark Karam Resumé`,`Higher Education`, `Adobe`,`Typography`,`Figma`, `Teaching Tools`,`Design Principles`,`Templates`,`Mockups`,`Mark Karam Resumé`,`Higher Education`,
+`Portfolio`, `Design Education`, `Creative Tutorials`, `Graphic Design`, `UI/UX`, `Teaching Design`, `HTML`, `CSS`, `Graphic Design`, `GitHub Pages`, `Podcast`, `How'd We get Here?`, `Blog`, `Education Technology`, `Experience Design`, `Mark Karam Resumé`, `Higher Education`, `Adobe`, `InDesign`, `Editorial`, `Photoshop`, `Illustrator`, `Typography`, `Figma`, `Teaching Tools`, `Design Principles`, `Templates`, `Mockups`, `Prototypes`, `Web Design`, `Humber College`, `Humber Polytechnic`
 
 ## Contact  
 Feel free to reach out via email for inquiries, collaborations, or feedback: [edtechxd@gmail.com]

@@ -20,7 +20,7 @@ const tickerTexts = [
   "👟 Wearing: Air Max '95",
   "👨🏾‍🏫 Teaching: Typography 1",
   "🎙️ Podcasting: How'd We Get Here?…",
-  "👨🏾‍💻 Working: Grading…",
+  "👨🏾‍💻 Working: Grading Assignments",
   "📺 Watching: Golden Girls",
   "✍🏾 Writing: GenAI Research Paper", 
   
@@ -32,21 +32,25 @@ const tickerTexts = [
   "👨🏾‍🏫 Teaching: Entrepreneurship",
   "📺 Watching: 24",
   "✍🏾 Writing: Design Tutorials",
-  "👨🏾‍💻 Working: App Design",
+  "👨🏾‍💻 Working: Designing a Web App",
   
   "📱 click-tap… Join Meeting",
   "🧘🏾‍♂️ Wellness: Yoga",
-  "📚 Reading: Ichigo Ichie",
+  "📚 Reading: The Book of Ichigo Ichie",
   "🏃🏾‍➡️ Running: 5km Pace",
   "🎧 Listening: 80's Pop",
   "👟 Wearing: Nike Air Huarache",
   "👨🏾‍🏫 Teaching: Portfolio",
   "🎙️ Podcasting: How'd We Get Here?…",
   "📱 clickity-click-click… Texting",
-  "👨🏾‍💻 Working: Lesson Plans",
+  "👨🏾‍💻 Working: Creating Lesson Plans",
   "📺 Watching: UFO Documentaries",
   
+  "🧘🏾‍♂️ Wellness: Potting plants",
   "🎧 Listening: 90's RnB",
+  "📚 Reading: Clarity & Connection",
+  "👨🏾‍💻 Working: Designing a Typeface",
+  "📺 Watching: Abbot Elementary",
 ];
 let tickerIndex = 0;
 

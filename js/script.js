@@ -50,7 +50,7 @@ const tickerTexts = [
   "🎧 Listening: 90's RnB",
   "📚 Reading: Clarity & Connection",
   "👨🏾‍💻 Working: Designing a Typeface",
-  "📺 Watching: Abbot Elementary",
+  "📺 Watching: Abbott Elementary",
 ];
 let tickerIndex = 0;
 

@@ -32,3 +32,13 @@ Your site is designed with accessibility, responsiveness, and user experience in
 
 ## Contact  
 Feel free to reach out via email for inquiries, collaborations, or feedback: [edtechxd@gmail.com]
+
+## License
+This project is proprietary and not licensed for public or private use. Please contact [edtechxd@gmail.com] for inquiries.
+
+All Rights Reserved.
+
+This code is proprietary and cannot be used, modified, or distributed without the author's explicit permission.
+
+
+

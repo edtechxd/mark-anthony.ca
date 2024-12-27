@@ -24,13 +24,13 @@ const tickerTexts = [
   "📺 Watching: Golden Girls",
   "✍🏾 Writing: GenAI Research Paper", 
   
-  "📱 click-click-tap… Sending Emails",
+  "📱 type-type-click… Sending Emails",
   "📚 Reading: Zen in the Art of Archery",
   "🏃🏾‍➡️ Running: 45min LIT",
   "🎧 Listening: André 3000",
   "👟 Wearing: New Balance 540",
   "👨🏾‍🏫 Teaching: Entrepreneurship",
-  "📺 Watching: 24",
+  "📺 Watching: The Fresh Prince of Bel Air",
   "✍🏾 Writing: Design Tutorials",
   "👨🏾‍💻 Working: Designing a Web App",
   
@@ -49,6 +49,7 @@ const tickerTexts = [
   "🧘🏾‍♂️ Wellness: Potting plants",
   "🎧 Listening: 90's RnB",
   "📚 Reading: Clarity & Connection",
+  "👟 Wearing: Slides with Socks",
   "👨🏾‍💻 Working: Designing a Typeface",
   "📺 Watching: Abbott Elementary",
 ];

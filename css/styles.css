@@ -647,32 +647,228 @@ body.dark-mode .author, body.dark-mode .author a{
 }
 
 body.dark-mode .author a:hover{
-    color:#fff0bd;
-    border-bottom:1px solid #fff0bd;
+    color:#fff;
+    border-bottom:1px solid #fff;
 }
 
 body.dark-mode .sig img{
    filter: invert(1) brightness(2);
 }
 
-/* Light Mode */
+body.dark-mode #light-mode-btn, body.dark-mode #alt-mode-btn, body.dark-mode #dark-mode-btn{
+    filter: invert(1) brightness(2);
+}
+
+/* LIGHT MODE */
 body.light-mode {
   --bg-color: #fff;
   --text-color: #444;
 }
 
+/* ALT MODE 1984 */
 
-/* Alternate Mode */
+/*Hide main divider in 1984 mode*/
+
+body.alt-mode .menu-icon{
+    margin-left:-40px;
+}
+
+body.alt-mode #divider{
+    display:none;
+}
+
+/*Hide 1984 mode divider in light and dark mode*/
+.alternate-divider{
+    display:none;
+}
+
 body.alt-mode {
-  --bg-color: #FFFDF6;
+/*  --bg-color: #FFFDF6;*/
+  --bg-color: #F0F5F6;
   --text-color: #444;
 }
 
-body.alt-mode .hr-titles span{
-    background: #FFFDF6;
+body.alt-mode #profile p{
+    font-family: 'departure_monoregular', monospace;
+    font-size: 1.25em;
+/*    color:#1fc742;*/
 }
 
-/* Theme Switcher */
+/* Alternate Divider Styling */
+
+/* Alternate Divider START */
+body.alt-mode .alternate-divider {
+    display: flex;
+    align-items: center; /* Vertically aligns items */
+    justify-content: space-between; /* Space between sections */
+    border: 2px solid black;
+    margin-top:80px;
+    padding: 10px 5px;
+    font-family: 'departure_monoregular', monospace;
+    font-weight: bold;
+    text-transform: lowercase;
+}
+
+/* Horizontal Lines (Left, Center, Right) */
+.left-lines, .center-lines, .right-lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3px; /* Space between lines */
+}
+
+.line {
+    height: 1px;
+    background-color: black;
+    width: 100%; /* Full stretch */
+}
+
+/* Left Section (Square) */
+.left-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 10px; /* Space around the square */
+}
+
+/* Square */
+.square {
+    width: 20px;
+    height: 20px;
+    border: 2px solid black;
+}
+
+/* Center Lines Section */
+.center-lines {
+    flex: 1; /* Lines stretch to fill space between the left and center section */
+}
+
+/* Center Section */
+.center-section {
+    font-size: 1em;
+    text-align: center;
+    margin: 0 20px; /* Adds spacing between the center section and adjacent sections */
+    flex: 0 0 auto; /* Prevents shrinking/stretching */
+}
+
+/* Right Lines Section */
+.right-lines {
+    flex: 1; /* Lines stretch to fill the entire right section */
+}
+
+/*Alternate Divider END*/
+
+body.alt-mode .hr-titles span{
+    background:#F0F5F6;
+}
+
+
+body.alt-mode #profile a {
+  color: #000; /* white for dark mode */
+}
+
+body.alt-mode #profile a.highlight-email:hover{
+    color:#000;
+}
+
+/*1984 MODE OVERLAY MENU*/
+
+body.alt-mode .overlay-menu{
+    background-color:#F0F5F6;
+}
+
+body.alt-mode .menu-item span{
+    color:#444;
+}
+
+body.alt-mode .menu-item h2 {
+  font-family: 'departure_monoregular', monospace;
+  font-size: 1.728em;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+body.alt-mode .menu-item a{
+  color:#444;
+  text-decoration: none;
+}
+
+body.alt-mode .menu-item a:hover{
+    color:#000;
+}
+
+body.alt-mode #profile p span{
+    font-family: 'departure_monoregular', monospace;
+}
+
+body.alt-mode .menu-footer img{
+    filter:none;
+}
+
+body.alt-mode .menu-footer p span{
+    color:#000;
+}
+
+body.alt-mode .menu-footer p a{
+    color:#444;
+}
+
+body.alt-mode .close-icon{
+    color:#444;
+}
+
+/*CRT FLICKER ALT MODE*/
+
+/* Base styles for the CRT flicker effect */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Ensures it doesn’t block user interaction */
+    z-index: 9999; /* Ensure it overlays everything */
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.1) 50%, transparent 50%);
+    background-size: 100% 2px; /* Simulates scanlines */
+    opacity: 0.5; /* Adjust opacity for visibility */
+    animation: flicker 0.1s infinite, glow 1s infinite alternate;
+/*    filter adds subtle noise*/
+/*    filter: contrast(1.2) saturate(1.1) brightness(1.1) drop-shadow(0 0 10px rgba(0, 255, 0, 0.2));*/
+}
+
+/* Flicker animation */
+@keyframes flicker {
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}
+
+/* Glow animation to simulate screen flicker */
+@keyframes glow {
+    0% {
+        filter: brightness(1.2);
+    }
+    100% {
+        filter: brightness(1);
+    }
+}
+
+/* Optional: Activate only in alt mode */
+body.alt-mode .crt-overlay {
+    display: block;
+}
+
+body:not(.alt-mode) .crt-overlay {
+    display: none;
+}
+
+/* THEME SWITCHER */
 .theme-switcher {
   display: flex;
   gap: 10px;
@@ -693,10 +889,9 @@ body.alt-mode .hr-titles span{
   transition: color 0.3s ease;
 }
 
-.theme-btn:hover {
-  color: #fff0bd;
+.theme-btn:hover, body.dark-mode .theme-btn:hover {
+    filter: invert(64%) sepia(21%) saturate(2939%) hue-rotate(82deg) brightness(95%) contrast(84%);
 }
-
 
 /*MOBILE*/
 
@@ -752,6 +947,30 @@ body.alt-mode .hr-titles span{
         line-height: 1.55em;
         margin-bottom: 1em;
         padding: 5px 16px;
+    }
+    
+    body.alt-mode .alternate-divider{
+        width:95%;
+        margin:0 auto;
+    
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 2px solid black;
+        margin-top: 80px;
+        padding: 10px 5px;
+        font-family: 'departure_monoregular', monospace;
+        font-weight: bold;
+        text-transform: lowercase;
+    }
+    
+    body.alt-mode .left-section{
+        margin:0 1px;
+        padding-right:5px;
+    }
+    
+    body.alt-mode #profile p{
+        font-size:1em;
     }
     
     .sig{

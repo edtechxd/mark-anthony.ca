@@ -12,54 +12,79 @@ function toggleMenu() {
 
 // JavaScript Ticker
 const tickerTexts = [
-  "📱 scroll-scroll-tap… Rot",
-  "🧘🏾‍♂️ Wellness: Meditating",
-  "📚 Reading: Ikigai",
-  "🏃🏾‍➡️ Running: Peloton 30 min HIIT",
-  "🎧 Listening: MF DOOM",
-  "👟 Wearing: Air Max '95",
-  "👨🏾‍🏫 Teaching: Typography 1",
-  "🎙️ Podcasting: How'd We Get Here?…",
-  "👨🏾‍💻 Working: Grading Assignments",
-  "📺 Watching: Golden Girls",
-  "✍🏾 Writing: GenAI Research Paper", 
-  
-  "📱 type-type-click… Sending Emails",
-  "📚 Reading: Zen in the Art of Archery",
-  "🏃🏾‍➡️ Running: 45min LIT",
-  "🎧 Listening: André 3000",
-  "👟 Wearing: New Balance 540",
-  "👨🏾‍🏫 Teaching: Entrepreneurship",
-  "📺 Watching: The Fresh Prince of Bel Air",
-  "✍🏾 Writing: Design Tutorials",
-  "👨🏾‍💻 Working: Designing a Web App",
-  
-  "📱 click-tap… Join Meeting",
-  "🧘🏾‍♂️ Wellness: Yoga",
-  "📚 Reading: The Book of Ichigo Ichie",
-  "🏃🏾‍➡️ Running: 5km Pace",
-  "🎧 Listening: 80's Pop",
-  "👟 Wearing: Nike Air Huarache",
-  "👨🏾‍🏫 Teaching: Portfolio",
-  "🎙️ Podcasting: How'd We Get Here?…",
-  "📱 clickity-click-click… Texting",
-  "👨🏾‍💻 Working: Creating Lesson Plans",
-  "📺 Watching: UFO Documentaries",
-  
-  "🧘🏾‍♂️ Wellness: Potting plants",
-  "🎧 Listening: 90's RnB",
-  "📚 Reading: Clarity & Connection",
-  "👟 Wearing: Slides with Socks",
-  "👨🏾‍💻 Working: Designing a Typeface",
-  "📺 Watching: Abbott Elementary",
+"📱 doom-scroll-tap… Rotting",
+"📱 type-type-click… Sending Emails",
+"📱 click-tap… Join Meeting",
+"📱 clickity-click-click… Texting",
+
+"🧘🏾‍♂️ Wellness: Meditating",
+"🧘🏾‍♂️ Wellness: Yoga",
+"🧘🏾‍♂️ Wellness: Plant dadding",
+"🧘🏾‍♂️ Wellness: Brush Lettering",
+"🧘🏾‍♂️ Wellness: Walking",
+    
+"📚 Reading: Ikigai",
+"📚 Reading: Zen in the Art of Archery",
+"📚 Reading: The Book of Ichigo Ichie",
+"📚 Reading: Clarity & Connection",
+"📚 Reading: 1984",
+    
+"🎧 Listening: MF DOOM",
+"🎧 Listening: André 3000",
+"🎧 Listening: 80's Pop",
+"🎧 Listening: 90's RnB",
+"🎧 Listening: De La Soul",
+"🎧 Listening: Wu Tang Clan",
+"🎧 Listening: Coldplay",
+"🎧 Listening: Tyla",
+"🎧 Listening: Tracy Chapman",
+"🎧 Listening: Nas",
+"🎧 Listening: Anita Baker",
+
+"🏃🏾‍➡️ Running: Peloton 30 min HIIT",
+"🏃🏾‍➡️ Running: 45min LIT",
+"🏃🏾‍➡️ Running: 5km Pace",
+    
+"👟 Wearing: Air Max '95",
+"👟 Wearing: New Balance 540",
+"👟 Wearing: Nike Air Huarache",
+"👟 Wearing: Flip-flops with Socks",
+    
+"👨🏾‍🏫 Teaching: Typography 1",
+"👨🏾‍🏫 Teaching: Entrepreneurship",
+"👨🏾‍🏫 Teaching: Portfolio",
+
+"👨🏾‍💻 Working: Grading Assignments",
+"👨🏾‍💻 Working: Designing a Web App",
+"👨🏾‍💻 Working: Creating Lesson Plans",
+"👨🏾‍💻 Working: Designing a Typeface",
+
+"✍🏾 Writing: GenAI Research Paper",
+"✍🏾 Writing: Design Tutorials",
+"✍🏾 Writing: Design Blog",
+"✍🏾 Writing: Journal",
+
+"📺 Watching: UFO Documentaries",
+"📺 Watching: Golden Girls",
+"📺 Watching: Abbott Elementary",
+"📺 Watching: Avatar The Last Airbender",
+"📺 Watching: Batman, Dark Knight Trilogy",
+"📺 Watching: The Fresh Prince of Bel Air",
+
+"🎙️ Podcasting: How'd We Get Here?…",
+"🎙️ Podcasting: How'd We Get Here?…",
+    
+"🎮 Playing: Mike Tyson's Punch-Out!!",
+"🎮 Playing: NBA 2k",
+"🎮 Playing: Gran Turismo",
 ];
-let tickerIndex = 0;
 
 function updateTicker() {
   const ticker = document.getElementById("ticker");
   if (ticker) {
-    ticker.innerHTML = tickerTexts[tickerIndex];
-    tickerIndex = (tickerIndex + 1) % tickerTexts.length;
+    // Select a random index from the tickerTexts array
+    const randomIndex = Math.floor(Math.random() * tickerTexts.length);
+    ticker.innerHTML = tickerTexts[randomIndex];
   } else {
     console.error("Element with ID 'ticker' not found.");
   }
@@ -68,6 +93,7 @@ function updateTicker() {
 // Start ticker updates
 updateTicker();
 setInterval(updateTicker, 5000);
+
 
 // Theme Switcher
 const darkModeBtn = document.getElementById("dark-mode-btn");

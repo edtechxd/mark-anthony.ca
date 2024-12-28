@@ -667,7 +667,7 @@ body.light-mode {
 
 /* ALT MODE 1984 */
 
-/*Hide main divider in 1984 mode*/
+/*Hide main elements in 1984 Alt Mode*/
 
 body.alt-mode .menu-icon{
     margin-left:-40px;
@@ -677,15 +677,26 @@ body.alt-mode #divider{
     display:none;
 }
 
-/*Hide 1984 mode divider in light and dark mode*/
+body.alt-mode .logo img{
+    display:none;
+}
+
 .alternate-divider{
     display:none;
 }
+
+/*Visible 1984 Alt Mode Elements */
 
 body.alt-mode {
 /*  --bg-color: #FFFDF6;*/
   --bg-color: #F0F5F6;
   --text-color: #444;
+}
+
+body.alt-mode .logo-1984 img{
+    width:40px;
+    height: 40px;
+    margin-top:10px;
 }
 
 body.alt-mode #profile p{
@@ -694,9 +705,9 @@ body.alt-mode #profile p{
 /*    color:#1fc742;*/
 }
 
-/* Alternate Divider Styling */
+/* 1984 Alt Mode Divider Styling */
 
-/* Alternate Divider START */
+/* 1984 Alt Mode Divider START */
 body.alt-mode .alternate-divider {
     display: flex;
     align-items: center; /* Vertically aligns items */
@@ -756,7 +767,7 @@ body.alt-mode .alternate-divider {
     flex: 1; /* Lines stretch to fill the entire right section */
 }
 
-/*Alternate Divider END*/
+/* 1984 Alt Mode Divider END*/
 
 body.alt-mode .hr-titles span{
     background:#F0F5F6;
@@ -771,7 +782,7 @@ body.alt-mode #profile a.highlight-email:hover{
     color:#000;
 }
 
-/*1984 MODE OVERLAY MENU*/
+/*1984 ALT MODE OVERLAY MENU*/
 
 body.alt-mode .overlay-menu{
     background-color:#F0F5F6;
@@ -889,8 +900,8 @@ body:not(.alt-mode) .crt-overlay {
   transition: color 0.3s ease;
 }
 
-.theme-btn:hover, body.dark-mode .theme-btn:hover {
-    filter: invert(64%) sepia(21%) saturate(2939%) hue-rotate(82deg) brightness(95%) contrast(84%);
+.theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
+    filter: invert(81%) sepia(7%) saturate(1943%) hue-rotate(175deg) brightness(94%) contrast(84%);
 }
 
 /*MOBILE*/

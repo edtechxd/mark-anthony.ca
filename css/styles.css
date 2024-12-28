@@ -40,8 +40,7 @@ color:#fff0bd;
 */
 
 
-
-/* General Reset */
+/* RESET */
 * {
   margin: 0;
   padding: 0;
@@ -689,6 +688,10 @@ body.alt-mode {
   --text-color: #444;
 }
 
+body.alt-mode #profile{
+    margin-top:40px;
+}
+
 body.alt-mode #profile p{
     font-family: 'departure_monoregular', monospace;
     font-size: 1.25em;
@@ -703,7 +706,7 @@ body.alt-mode .alternate-divider {
     align-items: center; /* Vertically aligns items */
     justify-content: space-between; /* Space between sections */
     border: 2px solid black;
-    margin-top:80px;
+    margin-top:30px;
     padding: 10px 5px;
     font-family: 'departure_monoregular', monospace;
     font-weight: bold;
@@ -869,30 +872,6 @@ body:not(.alt-mode) .crt-overlay {
     display: none;
 }
 
-/* THEME SWITCHER */
-.theme-switcher {
-  display: flex;
-  gap: 10px;
-  justify-content:center;
-/*
-  position: absolute;
-  top: 20px;
-  right: 20px;
-*/
-}
-
-.theme-btn {
-  background: none;
-  border: none;
-  font-size: 30px;
-  cursor: pointer;
-  color: var(--text-color);
-  transition: color 0.3s ease;
-}
-
-.theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
-    filter: invert(81%) sepia(7%) saturate(1943%) hue-rotate(175deg) brightness(94%) contrast(84%);
-}
 
 /*ALT MODE RULER*/
 
@@ -916,7 +895,7 @@ body:not(.alt-mode) .crt-overlay {
   display: block;
 }
 
-/* Ticks Container */
+/* RULER CONTAINER */
 .ruler-ticks {
   position: relative;
   width: 100%;
@@ -957,6 +936,37 @@ body:not(.alt-mode) .crt-overlay {
   color: black;
 }
 
+/*RULER TAB*/
+
+.tab span{
+    position:absolute;
+    left:0px;
+}
+
+/* THEME SWITCHER */
+.theme-switcher {
+  display: flex;
+  gap: 10px;
+  justify-content:center;
+/*
+  position: absolute;
+  top: 20px;
+  right: 20px;
+*/
+}
+
+.theme-btn {
+  background: none;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
+    filter: invert(81%) sepia(7%) saturate(1943%) hue-rotate(175deg) brightness(94%) contrast(84%);
+}
 
 /*MOBILE*/
 
@@ -989,10 +999,6 @@ body:not(.alt-mode) .crt-overlay {
         cursor: pointer;
     }
     
-    body.alt-mode .menu-icon{
-        margin-top:35px;
-    }
-    
     .hr-titles{
         margin:0;
         padding:75px 0 0 0;
@@ -1007,7 +1013,7 @@ body:not(.alt-mode) .crt-overlay {
     }
     
     #profile {
-        margin-top: 25px;
+        margin-top: 30px;
     }
     
     #profile p {
@@ -1036,6 +1042,11 @@ body:not(.alt-mode) .crt-overlay {
     body.alt-mode .left-section{
         margin:0 1px;
         padding-right:5px;
+    }
+    
+    body.alt-mode .ruler{
+        width:95%;
+        margin:0 auto;
     }
     
     body.alt-mode #profile p{

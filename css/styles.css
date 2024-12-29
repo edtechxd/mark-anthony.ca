@@ -655,7 +655,11 @@ body.dark-mode .sig img{
 }
 
 body.dark-mode .footer-ticker-text p{
-    filter: invert(1) brightness(2);
+    color:#fff; 
+}
+
+body.dark-mode .footer-ticker-text p:first-child{
+    border:solid 1px #fff;
 }
 
 body.dark-mode #light-mode-btn, body.dark-mode #alt-mode-btn, body.dark-mode #dark-mode-btn{

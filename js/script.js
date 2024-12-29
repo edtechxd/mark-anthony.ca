@@ -10,7 +10,7 @@ function toggleMenu() {
   }
 }
 
-// JavaScript Ticker
+// STATUS TICKER
 const tickerTexts = [
 "📱 doom-scroll-tap… Rotting",
 "📱 type-type-click… Sending Emails",
@@ -95,7 +95,54 @@ updateTicker();
 setInterval(updateTicker, 5000);
 
 
-// Theme Switcher
+
+// SH*T I SAY DAILY QUOTES
+const quotes = [
+"On a quest to design a low-fi life in a high-tech world.",
+"You're always doing better than you think.",
+"Sky's the view, not the limit.",
+"A candle loses nothing by lighting another candle.",
+"Here, now.",
+"Take breaks, or your body will take one for you.",
+"Be a leader in your journey and a willing passanger in someone else's.", 
+"Windshields are bigger than rear-views for a reason.",
+"When it seems like things are falling apart, they might actually be falling into place.",
+"Don't let the job get in the way of doing the work.",
+"We are remembered most for how we make others feel.",
+"I am as many teachers as I have students.",
+"We're not all in the same boat. Some of us have rafts and others have yachts.",
+"You can either give back what you've recieved or give what you've always wanted.",
+"I wouldn't be what I am today without imagination.",
+"You are the most important project you'll ever work on.",
+"Education for some can be a means of survival.",
+"Without U, there is no Us.",
+"I am not what I do. I do what I am.",
+"Never cut the process for the progress.",
+"They say hard work beats talent any day, so I made hard work my talent.",
+"Success is relative.",
+"Confidence comes when you compete with yourself and not with others.",
+"I might be late, but I'm always on time.",
+"Listen to your mind for what you need, your heart for what you want, and your soul for where you need to be.",
+"You are YOUnique.",
+"Never dim yoru light for anyone.",
+"I love you more today than I did yesterday, and less than I will tomorrow.",
+"Be.",
+];
+
+// Function to get a random quote for the day
+function getRandomDailyQuote() {
+  const date = new Date();
+  const seed = date.getDate(); // Use the day of the month as a seed
+  const randomIndex = seed % quotes.length; // Ensure the quote is consistent for the day
+  return `"${quotes[randomIndex]}"`; // Add quotation marks around the quote
+}
+
+// Update the ticker with the random daily quote
+document.getElementById("daily-quote").innerText = getRandomDailyQuote();
+
+
+
+// THEME SWITCHER
 const darkModeBtn = document.getElementById("dark-mode-btn");
 const lightModeBtn = document.getElementById("light-mode-btn");
 const altModeBtn = document.getElementById("alt-mode-btn");

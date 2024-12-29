@@ -943,6 +943,67 @@ body:not(.alt-mode) .crt-overlay {
     left:0px;
 }
 
+/*1984 ALT MODE SCROLL BAR*/
+
+/* Scrollbar Styles for Alt Mode */
+body.alt-mode::-webkit-scrollbar {
+  width: 20px; /* Scrollbar width */
+  background: repeating-linear-gradient(
+    0deg,
+    #000000,
+    #000000 1px,
+    #ffffff 1px,
+    #ffffff 2px
+  ); /* Ruler background */
+}
+
+/* Thumb (Square Handle) */
+body.alt-mode::-webkit-scrollbar-thumb {
+  background-color: #ffffff; /* Handle color */
+  border: 2px solid #000000; /* Handle border */
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px; /* Ensure square shape */
+}
+
+/* Adjust the track to align arrows */
+body.alt-mode::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(
+    0deg,
+    #000000,
+    #000000 1px,
+    #ffffff 1px,
+    #ffffff 2px
+  ); /* Same ruler background */
+  position: relative;
+}
+
+/* Arrow Buttons */
+/* Top Arrow */
+body.alt-mode::-webkit-scrollbar-button:single-button:decrement {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  height: 20px;
+  display: block;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M8 4L3 9h10L8 4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+
+/* Bottom Arrow */
+body.alt-mode::-webkit-scrollbar-button:single-button:increment {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  height: 20px;
+  display: block;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23000' d='M8 12l5-5H3l5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+
+
 /* THEME SWITCHER */
 .theme-switcher {
   display: flex;

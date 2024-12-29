@@ -654,6 +654,10 @@ body.dark-mode .sig img{
    filter: invert(1) brightness(2);
 }
 
+body.dark-mode .footer-ticker-text p{
+    filter: invert(1) brightness(2);
+}
+
 body.dark-mode #light-mode-btn, body.dark-mode #alt-mode-btn, body.dark-mode #dark-mode-btn{
     filter: invert(1) brightness(2);
 }
@@ -692,11 +696,6 @@ body.alt-mode #profile{
     margin-top:40px;
 }
 
-body.alt-mode #profile p{
-    font-family: 'departure_monoregular', monospace;
-    font-size: 1.25em;
-/*    color:#1fc742;*/
-}
 
 /* 1984 Alt Mode Divider Styling */
 
@@ -799,6 +798,11 @@ body.alt-mode .menu-item a{
 
 body.alt-mode .menu-item a:hover{
     color:#000;
+}
+
+body.alt-mode #profile p{
+   font-family: 'departure_monoregular', monospace;
+    font-size: 1.25em;
 }
 
 body.alt-mode #profile p span{
@@ -1003,6 +1007,46 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
   cursor: pointer;
 }
 
+/*FOOTER TICKER DAILY QUOTES*/
+
+.footer-ticker {
+  display: flex;
+  align-items: center;
+  justify-content:center;
+    flex-direction: column;
+  gap: 15px;
+  margin: 45px 0 0 0;
+/*    padding:30px 0 20px 0;*/
+}
+
+.footer-ticker-img {
+  width: 50px; /* Adjust the size of the image */
+  height: 50px;
+  /*border-radius: 50%;  /*Optional for rounded styling */
+  /*border: 2px solid #000; /* Lo-fi aesthetic */
+}
+
+.footer-ticker-text p {
+  margin: 10px;
+  font-size: .65rem;
+  text-align: center;
+  color: #000; /* Text color */
+  font-family: 'departure_monoregular', monospace;
+}
+
+body.alt-mode .footer-ticker p{
+    font-size:.95em !important;
+}
+
+.footer-ticker-text p:first-child {
+  font-weight: bold;
+    font-size:1em;
+    border: solid 1px #000;
+    padding:12px 5px !important;
+    width:50%;
+    margin:12px auto;
+    text-transform: capitalize;
+}
 
 /* THEME SWITCHER */
 .theme-switcher {
@@ -1026,7 +1070,7 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
 }
 
 .theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
-    filter: invert(81%) sepia(5%) saturate(918%) hue-rotate(38deg) brightness(82%) contrast(94%);
+    filter: invert(73%) sepia(69%) saturate(4243%) hue-rotate(328deg) brightness(103%) contrast(101%);
 }
 
 /*MOBILE*/

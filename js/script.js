@@ -134,7 +134,9 @@ function getRandomDailyQuote() {
   const date = new Date();
   const seed = date.getDate(); // Use the day of the month as a seed
   const randomIndex = seed % quotes.length; // Ensure the quote is consistent for the day
-  return `"${quotes[randomIndex]}"`; // Add quotation marks around the quote
+  return quotes[randomIndex]; // Return the quote without adding quotation marks
+  
+  //return `"${quotes[randomIndex]}"`; // Add quotation marks around the quote
 }
 
 // Update the ticker with the random daily quote

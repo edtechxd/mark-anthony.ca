@@ -1033,6 +1033,7 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
 .footer-ticker-text p {
   margin: 10px;
   font-size: .65rem;
+  line-height: 1.1em;
   text-align: center;
   color: #000; /* Text color */
   font-family: 'departure_monoregular', monospace;
@@ -1050,6 +1051,21 @@ body.alt-mode .footer-ticker p{
     width:50%;
     margin:12px auto;
     text-transform: capitalize;
+}
+
+/*adds typographers quotes around quotation.*/
+.footer-ticker-text p:last-child {
+  font-style: italic; /* Optional: Italicize the quote for emphasis */
+  margin-top: 5px; /* Add spacing between lines */
+  quotes: "“" "”"; /* Define custom quotes for browsers that support it */
+}
+
+.footer-ticker-text p:last-child::before {
+  content: open-quote; /* Add the opening quote */
+}
+
+.footer-ticker-text p:last-child::after {
+  content: close-quote; /* Add the closing quote */
 }
 
 /* THEME SWITCHER */

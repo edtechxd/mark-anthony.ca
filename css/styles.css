@@ -959,7 +959,7 @@ body.alt-mode::-webkit-scrollbar {
 
 /* Thumb (Square Handle) */
 body.alt-mode::-webkit-scrollbar-thumb {
-  background-color: #ffffff; /* Handle color */
+  background-color: #f7f7f7; /* Handle color */
   border: 2px solid #000000; /* Handle border */
   box-sizing: border-box;
   width: 16px;
@@ -1026,7 +1026,7 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
 }
 
 .theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
-    filter: invert(81%) sepia(7%) saturate(1943%) hue-rotate(175deg) brightness(94%) contrast(84%);
+    filter: invert(81%) sepia(5%) saturate(918%) hue-rotate(38deg) brightness(82%) contrast(94%);
 }
 
 /*MOBILE*/

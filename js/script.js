@@ -98,7 +98,7 @@ setInterval(updateTicker, 5000);
 
 // SH*T I SAY DAILY QUOTES
 const quotes = [
-"💬 On a quest to design a low-fi life in a high-tech world.",
+"💬 Living a low-fi life in a high-tech world.",
 "💬 You're always doing better than you think.",
 "💬 Sky's the view, not the limit.",
 "💬 A candle loses nothing by lighting another candle.",

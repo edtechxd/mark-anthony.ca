@@ -36,7 +36,7 @@ const tickerTexts = [
 "🎧 Listening: De La Soul",
 "🎧 Listening: Wu Tang Clan",
 "🎧 Listening: Coldplay",
-"🎧 Listening: Tyla",
+"🎧 Listening: Cordae",
 "🎧 Listening: Tracy Chapman",
 "🎧 Listening: Nas",
 "🎧 Listening: Anita Baker",
@@ -48,7 +48,7 @@ const tickerTexts = [
 "👟 Wearing: Air Max '95",
 "👟 Wearing: New Balance 540",
 "👟 Wearing: Nike Air Huarache",
-"👟 Wearing: Flip-flops with Socks",
+"👟 Wearing: Flip-flops & Socks",
     
 "👨🏾‍🏫 Teaching: Typography 1",
 "👨🏾‍🏫 Teaching: Entrepreneurship",
@@ -68,8 +68,8 @@ const tickerTexts = [
 "📺 Watching: Golden Girls",
 "📺 Watching: Abbott Elementary",
 "📺 Watching: Avatar The Last Airbender",
-"📺 Watching: Batman, Dark Knight Trilogy",
-"📺 Watching: The Fresh Prince of Bel Air",
+"📺 Watching: Batman, Dark Knight",
+"📺 Watching: Fresh Prince of Bel Air",
 
 "🎙️ Podcasting: How'd We Get Here?…",
 "🎙️ Podcasting: How'd We Get Here?…",
@@ -115,10 +115,11 @@ if (darkModeBtn && lightModeBtn && altModeBtn) {
   });
 
   // Apply Alternate Mode
-  altModeBtn.addEventListener("click", () => {
-    document.body.classList.remove("dark-mode", "light-mode");
-    document.body.classList.add("alt-mode");
-  });
+ altModeBtn.addEventListener("click", () => {
+  document.body.classList.remove("dark-mode", "light-mode");
+  document.body.classList.add("alt-mode");
+  console.log("Alt mode activated:", document.body.classList);
+});
 } else {
   console.error("One or more theme switch buttons not found.");
 }

@@ -770,13 +770,19 @@ body.alt-mode .hr-titles span{
 }
 
 
-body.alt-mode #profile a {
+body.alt-mode #profile a{
   color: #000; /* white for dark mode */
 }
 
 body.alt-mode #profile a.highlight-email:hover{
     color:#000;
 }
+
+/*
+body.alt-mode .author a:hover{
+    color:#0000ee !important;
+}
+*/
 
 /*1984 ALT MODE OVERLAY MENU*/
 
@@ -788,7 +794,7 @@ body.alt-mode .menu-item span{
     color:#444;
 }
 
-body.alt-mode .menu-item h2 {
+body.alt-mode .menu-item h2{
   font-family: 'departure_monoregular', monospace;
   font-size: 1.728em;
   font-weight: bold;
@@ -801,7 +807,7 @@ body.alt-mode .menu-item a{
 }
 
 body.alt-mode .menu-item a:hover{
-    color:#000;
+    color:#0000ee;
 }
 
 body.alt-mode #profile p{
@@ -817,12 +823,20 @@ body.alt-mode .menu-footer img{
     filter:none;
 }
 
+body.alt-mode .menu-footer img:hover{
+    filter: invert(14%) sepia(82%) saturate(5112%) hue-rotate(239deg) brightness(83%) contrast(135%);
+}
+
 body.alt-mode .menu-footer p span{
     color:#000;
 }
 
 body.alt-mode .menu-footer p a{
     color:#444;
+}
+
+body.alt-mode .menu-footer p a:hover{
+    color:#0000ee;
 }
 
 body.alt-mode .close-icon{
@@ -1057,7 +1071,7 @@ body.alt-mode .footer-ticker p{
 .footer-ticker-text p:last-child {
   font-style: italic; /* Optional: Italicize the quote for emphasis */
   margin-top: 5px; /* Add spacing between lines */
-  quotes: "“" "”"; /* Define custom quotes for browsers that support it */
+  quotes: "💬 “" "”"; /* Define custom quotes for browsers that support it */
 }
 
 .footer-ticker-text p:last-child::before {

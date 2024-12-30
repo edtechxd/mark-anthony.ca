@@ -1104,7 +1104,7 @@ body.alt-mode .footer-ticker p{
 }
 
 .theme-btn:hover, body.dark-mode #dark-mode-btn:hover, body.dark-mode #alt-mode-btn:hover, body.dark-mode #light-mode-btn:hover {
-    filter: invert(73%) sepia(69%) saturate(4243%) hue-rotate(328deg) brightness(103%) contrast(101%);
+    filter: invert(73%) sepia(93%) saturate(315%) hue-rotate(2deg) brightness(90%) contrast(95%);
 }
 
 /*MOBILE*/

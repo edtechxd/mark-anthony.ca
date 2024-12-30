@@ -1046,7 +1046,7 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
 
 .footer-ticker-text p {
   margin: 10px;
-  font-size: .65rem;
+  font-size: .75rem;
   line-height: 1.1em;
   text-align: center;
   color: #000; /* Text color */
@@ -1054,7 +1054,7 @@ body.alt-mode::-webkit-scrollbar-button:single-button:increment {
 }
 
 body.alt-mode .footer-ticker p{
-    font-size:.95em !important;
+    font-size:1em !important;
 }
 
 .footer-ticker-text p:first-child {

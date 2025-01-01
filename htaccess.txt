@@ -1,0 +1,12 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Redirect for modular grids post
+Redirect 301 /modular-grids-indesign/ https://medium.com/@edtechxd/modular-grids-indesign-4c5c84a1a3ac
+
+# Redirect for another article
+Redirect 301 /old-article/ https://newsite.com/new-article
+
+# Redirect for a blog post
+Redirect 301 /old-blog-post/ https://medium.com/@username/updated-blog-post
+

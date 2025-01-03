@@ -137,43 +137,42 @@ const quotes = [
   "Be.",
 ];
 
-// Shuffle quotes array
+// Shuffle the quotes array
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
 }
 
-// Initialize shuffled quotes and index
-let shuffledQuotes = [...quotes];
-shuffleArray(shuffledQuotes);
-let currentIndex = 0;
+// Initialize and persist the shuffled quotes
+function getShuffledQuotes() {
+  const storedQuotes = localStorage.getItem("shuffledQuotes");
+  if (storedQuotes) {
+    return JSON.parse(storedQuotes);
+  }
 
-// Function to get the daily quote
+  // Shuffle and store if not already stored
+  const shuffledQuotes = shuffleArray([...quotes]);
+  localStorage.setItem("shuffledQuotes", JSON.stringify(shuffledQuotes));
+  return shuffledQuotes;
+}
+
+// Get the quote for the day
 function getDailyQuote() {
-  const date = new Date().toDateString(); // Use the full date as a key
-  const storedDate = localStorage.getItem("quoteDate");
-  const storedIndex = localStorage.getItem("quoteIndex");
+  const shuffledQuotes = getShuffledQuotes();
 
-  if (storedDate === date && storedIndex !== null) {
-    // Use the stored index for the current day
-    return shuffledQuotes[parseInt(storedIndex, 10)];
-  }
+  // Use the day of the year as the index
+  const date = new Date();
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = date - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
 
-  // If it's a new day, increment the index
-  currentIndex = (currentIndex + 1) % shuffledQuotes.length;
-
-  // If we've shown all quotes, reshuffle
-  if (currentIndex === 0) {
-    shuffleArray(shuffledQuotes);
-  }
-
-  // Store the new date and index
-  localStorage.setItem("quoteDate", date);
-  localStorage.setItem("quoteIndex", currentIndex);
-
-  return shuffledQuotes[currentIndex];
+  // Select a quote based on the day
+  const quoteIndex = dayOfYear % shuffledQuotes.length;
+  return shuffledQuotes[quoteIndex];
 }
 
 // Update the ticker with the daily quote

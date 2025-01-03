@@ -103,7 +103,6 @@ updateTicker();
 setInterval(updateTicker, 5000);
 
 
-
 // SH*T I SAY DAILY QUOTES
 const quotes = [
   "Living a low-fi life in a high-tech world.",
@@ -152,8 +151,19 @@ function getDailySeed() {
   const date = new Date();
   const startOfYear = new Date(date.getFullYear(), 0, 0);
   const diff = date - startOfYear;
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return dayOfYear;
+}
 
+// Get the quote for the day
+function getDailyQuote() {
+  const seed = getDailySeed();
+  const shuffledQuotes = shuffleQuotes(seed);
+  return shuffledQuotes[0]; // Use the first quote from the shuffled array
+}
+
+// Update the ticker with the daily quote
+document.getElementById("daily-quote").innerText = getDailyQuote();
 
 
 

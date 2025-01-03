@@ -137,46 +137,23 @@ const quotes = [
   "Be.",
 ];
 
-// Shuffle the quotes array
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+// Shuffle the quotes array deterministically
+function shuffleQuotes(seed) {
+  const shuffled = [...quotes];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const randomIndex = (Math.abs(seed) + i) % shuffled.length;
+    [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
   }
-  return array;
+  return shuffled;
 }
 
-// Initialize and persist the shuffled quotes
-function getShuffledQuotes() {
-  const storedQuotes = localStorage.getItem("shuffledQuotes");
-  if (storedQuotes) {
-    return JSON.parse(storedQuotes);
-  }
-
-  // Shuffle and store if not already stored
-  const shuffledQuotes = shuffleArray([...quotes]);
-  localStorage.setItem("shuffledQuotes", JSON.stringify(shuffledQuotes));
-  return shuffledQuotes;
-}
-
-// Get the quote for the day
-function getDailyQuote() {
-  const shuffledQuotes = getShuffledQuotes();
-
-  // Use the day of the year as the index
+// Get the seed for the current day (e.g., year and day of the year)
+function getDailySeed() {
   const date = new Date();
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date - start;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const dayOfYear = Math.floor(diff / oneDay);
+  const startOfYear = new Date(date.getFullYear(), 0, 0);
+  const diff = date - startOfYear;
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24
 
-  // Select a quote based on the day
-  const quoteIndex = dayOfYear % shuffledQuotes.length;
-  return shuffledQuotes[quoteIndex];
-}
-
-// Update the ticker with the daily quote
-document.getElementById("daily-quote").innerText = getDailyQuote();
 
 
 

@@ -106,50 +106,78 @@ setInterval(updateTicker, 5000);
 
 // SH*T I SAY DAILY QUOTES
 const quotes = [
-"Living a low-fi life in a high-tech world.",
-"You're always doing better than you think.",
-"Sky's the view, not the limit.",
-"A candle loses nothing by lighting another candle.",
-"Here, now.",
-"Take breaks, or your body will take one for you.",
-"Be a leader in your journey and a willing passenger in someone else's.", 
-"Windshields are bigger than rear-views for a reason.",
-"When it seems like things are falling apart, they might actually be falling into place.",
-"Don't let the job get in the way of doing the work.",
-"We are remembered most for how we make others feel.",
-"I am as many teachers as I have students.",
-"We're not all in the same boat. Some of us have rafts and others have yachts.",
-"You can either give back what you've received or give what you've always wanted.",
-"I wouldn't be what I am today without imagination.",
-"You are the most important project you'll ever work on.",
-"Education for some can be a means of survival.",
-"Without U, there is no Us.",
-"I am not what I do. I do what I am.",
-"Never cut the process for the progress.",
-"They say hard work beats talent any day, so I made hard work my talent.",
-"Success is relative.",
-"Confidence comes when you compete with yourself and not with others.",
-"I might be late, but I'm always on time.",
-"Listen to your mind for what you need, your heart for what you want, and your soul for where you need to be.",
-"You are YOUnique.",
-"Never dim your light for anyone.",
-"I love you more today than I did yesterday, and less than I will tomorrow.",
-"Be.",
+  "Living a low-fi life in a high-tech world.",
+  "You're always doing better than you think.",
+  "Sky's the view, not the limit.",
+  "A candle loses nothing by lighting another candle.",
+  "Here, now.",
+  "Take breaks, or your body will take one for you.",
+  "Be a leader in your journey and a willing passenger in someone else's.",
+  "Windshields are bigger than rear-views for a reason.",
+  "When it seems like things are falling apart, they might actually be falling into place.",
+  "Don't let the job get in the way of doing the work.",
+  "We are remembered most for how we make others feel.",
+  "I am as many teachers as I have students.",
+  "We're not all in the same boat. Some of us have rafts and others have yachts.",
+  "You can either give back what you've received or give what you've always wanted.",
+  "I wouldn't be what I am today without imagination.",
+  "You are the most important project you'll ever work on.",
+  "Education for some can be a means of survival.",
+  "Without U, there is no Us.",
+  "I am not what I do. I do what I am.",
+  "Never cut the process for the progress.",
+  "They say hard work beats talent any day, so I made hard work my talent.",
+  "Success is relative.",
+  "Confidence comes when you compete with yourself and not with others.",
+  "I might be late, but I'm always on time.",
+  "Listen to your mind for what you need, your heart for what you want, and your soul for where you need to be.",
+  "You are YOUnique.",
+  "Never dim your light for anyone.",
+  "I love you more today than I did yesterday, and less than I will tomorrow.",
+  "Be.",
 ];
 
-// Function to get a random quote for the day
-function getRandomDailyQuote() {
-  const date = new Date();
-  const seed = date.getDate(); // Use the day of the month as a seed
-  const randomIndex = seed % quotes.length; // Ensure the quote is consistent for the day
-  
-  return quotes[randomIndex]; // Return the quote without adding quotation marks
-  
-  //return `"${quotes[randomIndex]}"`; // Add quotation marks around the quote
+// Shuffle quotes array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
-// Update the ticker with the random daily quote
-document.getElementById("daily-quote").innerText = getRandomDailyQuote();
+// Initialize shuffled quotes and index
+let shuffledQuotes = [...quotes];
+shuffleArray(shuffledQuotes);
+let currentIndex = 0;
+
+// Function to get the daily quote
+function getDailyQuote() {
+  const date = new Date().toDateString(); // Use the full date as a key
+  const storedDate = localStorage.getItem("quoteDate");
+  const storedIndex = localStorage.getItem("quoteIndex");
+
+  if (storedDate === date && storedIndex !== null) {
+    // Use the stored index for the current day
+    return shuffledQuotes[parseInt(storedIndex, 10)];
+  }
+
+  // If it's a new day, increment the index
+  currentIndex = (currentIndex + 1) % shuffledQuotes.length;
+
+  // If we've shown all quotes, reshuffle
+  if (currentIndex === 0) {
+    shuffleArray(shuffledQuotes);
+  }
+
+  // Store the new date and index
+  localStorage.setItem("quoteDate", date);
+  localStorage.setItem("quoteIndex", currentIndex);
+
+  return shuffledQuotes[currentIndex];
+}
+
+// Update the ticker with the daily quote
+document.getElementById("daily-quote").innerText = getDailyQuote();
 
 
 

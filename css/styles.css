@@ -1207,9 +1207,13 @@ body.alt-mode .footer-ticker p{
         margin: 20px 0 10px 0;
     }
     
+    .footer-ticker{
+        width:95%;
+    }
+    
     .footer-ticker-text p:first-child{
-        max-width:90%;
-        min-width:90%;
+        max-width:95%;
+        min-width:95%;
     }
     
     

@@ -1194,7 +1194,7 @@ body.alt-mode .footer-ticker p{
     }
     
     body.alt-mode #profile p{
-        font-size:1em;
+        font-size:1rem;
     }
     
     .sig{
@@ -1208,7 +1208,11 @@ body.alt-mode .footer-ticker p{
     }
     
     .footer-ticker{
-        width:95%;
+        width:100%;
+    }
+    
+    .footer-ticker-text p{
+        font-size:.75rem !important;
     }
     
     .footer-ticker-text p:first-child{

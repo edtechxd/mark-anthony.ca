@@ -1207,6 +1207,11 @@ body.alt-mode .footer-ticker p{
         margin: 20px 0 10px 0;
     }
     
+    .footer-ticker-text p:first-child{
+        max-width:90%;
+        min-width:90%;
+    }
+    
     
 }
 /* Medium devices (i.e. tablets in landscape */

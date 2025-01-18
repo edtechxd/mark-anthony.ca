@@ -36,12 +36,14 @@ const tickerTexts = [
 "🎧 Listening: De La Soul",
 "🎧 Listening: Wu Tang Clan",
 "🎧 Listening: Coldplay",
-"🎧 Listening: Cordae",
+"🎧 Listening: Jodeci",
 "🎧 Listening: Tracy Chapman",
 "🎧 Listening: Nas",
 "🎧 Listening: Anita Baker",
 "🎧 Listening: Afrobeats",
 "🎧 Listening: Lofi Jazz",
+"🎧 Listening: Sampha",
+"🎧 Listening: Tyler, The Creator",
 
 "🏃🏾‍➡️ Running: Peloton 30min HIIT",
 "🏃🏾‍➡️ Running: 45min LIT",
@@ -54,7 +56,8 @@ const tickerTexts = [
 "👟 Wearing: Flip-flops & Socks",
 "👟 Wearing: Adidas NMD1",
 "👟 Wearing: Nike Sacai LD Waffle",
-"👟 Wearing: Air Jordan 3",    
+"👟 Wearing: Air Jordan 3",  
+"👟 Wearing: Nike Cortez", 
     
 "👨🏾‍🏫 Teaching: Typography",
 "👨🏾‍🏫 Teaching: Entrepreneurship",
@@ -71,12 +74,13 @@ const tickerTexts = [
 "✍🏾 Writing: Blog Post",
 "✍🏾 Writing: Journal",
 
-"📺 Watching: UFO Documentaries",
+"📺 Watching: UFO Doc",
 "📺 Watching: Golden Girls",
 "📺 Watching: Abbott Elementary",
 "📺 Watching: Avatar The Last Airbender",
 "📺 Watching: Batman, Dark Knight",
 "📺 Watching: Fresh Prince of Bel Air",
+"📺 Watching: Attack on Titan (AoT)",
 
 "🎙️ Podcasting: How'd We Get Here?…",
 "🎙️ Podcasting: How'd We Get Here?…",
@@ -134,6 +138,7 @@ const quotes = [
   "Never dim your light for anyone.",
   "I love you more today than I did yesterday, and less than I will tomorrow.",
   "Be.",
+  "This is where the cake is baked.",
 ];
 
 // Shuffle the quotes array deterministically

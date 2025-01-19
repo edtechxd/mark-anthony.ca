@@ -58,6 +58,7 @@ const tickerTexts = [
 "👟 Wearing: Nike Sacai LD Waffle",
 "👟 Wearing: Air Jordan 3",  
 "👟 Wearing: Nike Cortez", 
+"👟 Wearing: ON Cloudsurfer", 
     
 "👨🏾‍🏫 Teaching: Typography",
 "👨🏾‍🏫 Teaching: Entrepreneurship",

@@ -140,6 +140,10 @@ const quotes = [
   "I love you more today than I did yesterday, and less than I will tomorrow.",
   "Be.",
   "This is where the cake is baked.",
+  "Don't compare your day one to someone's day one-thousand.",
+  "Set your boundaries with barb wire.",
+    "Time is a service that doesn't issue refunds.",
+    "Put limits on what you give because takers won't limit what they take.",
 ];
 
 // Shuffle the quotes array deterministically

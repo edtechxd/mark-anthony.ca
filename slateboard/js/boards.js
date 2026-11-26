@@ -45,7 +45,7 @@ const SlateBoards = (() => {
       cachedCreatorBoards = await SlateStorage.getCreatorBoards();
     } catch (err) {
       console.error(err);
-      grid.innerHTML = `<div class="empty-state"><h3>Database Connection Error</h3><p>Check your Supabase URL and key in <code>js/storage.js</code>.</p></div>`;
+      grid.innerHTML = `<div class="empty-state"><h3>Database Connection Error</h3><p>${escapeHtml(err.message || "Check your Supabase URL and key in js/storage.js.")}</p></div>`;
       return;
     }
 
@@ -111,7 +111,7 @@ const SlateBoards = (() => {
       result = await SlateStorage.getBoardDetail(boardId, passwordToUse);
     } catch (err) {
       console.error(err);
-      alert("Could not load board from database.");
+      alert(`Could not load board from database: ${err.message || err}`);
       return;
     }
 
@@ -212,6 +212,7 @@ const SlateBoards = (() => {
 
     document.getElementById("boardForm").addEventListener("submit", async e => {
       e.preventDefault();
+      const saveBtn = document.getElementById("saveBoardBtn");
       const session = SlateStorage.getSession();
       const editId = document.getElementById("editBoardId").value;
       const title = document.getElementById("boardTitleInput").value.trim();
@@ -223,25 +224,38 @@ const SlateBoards = (() => {
       const boardId = editId || ("board_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
       const isArchived = editId ? document.getElementById("toggleArchiveBoardBtn").dataset.archived === "1" : false;
 
-      const res = await SlateStorage.saveBoard({
-        id: boardId,
-        title,
-        description,
-        ownerId: session.creatorId,
-        ownerName: session.displayName,
-        visibility,
-        password,
-        archived: isArchived,
-        createdAt: Date.now()
-      });
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const res = await SlateStorage.saveBoard({
+          id: boardId,
+          title,
+          description,
+          ownerId: session.creatorId,
+          ownerName: session.displayName,
+          visibility,
+          password,
+          archived: isArchived,
+          createdAt: Date.now()
+        });
 
-      if (res && res.error === "limit_reached") {
-        alert(`You have reached the ${MAX_ACTIVE_BOARDS} active board limit.`);
-        return;
+        if (res && res.error === "limit_reached") {
+          alert(`You have reached the ${MAX_ACTIVE_BOARDS} active board limit.`);
+          return;
+        }
+
+        if (res && res.error === "unauthorized") {
+          alert("Only the board owner can update this board.");
+          return;
+        }
+
+        document.getElementById("boardModal").classList.add("hidden");
+        await openBoard(boardId);
+      } catch (err) {
+        console.error(err);
+        alert(`Failed to save board: ${err.message || err}`);
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
       }
-
-      document.getElementById("boardModal").classList.add("hidden");
-      await openBoard(boardId);
     });
 
     document.getElementById("toggleArchiveBoardBtn").addEventListener("click", async () => {
@@ -249,32 +263,42 @@ const SlateBoards = (() => {
       const session = SlateStorage.getSession();
       const currentlyArchived = document.getElementById("toggleArchiveBoardBtn").dataset.archived === "1";
 
-      const res = await SlateStorage.saveBoard({
-        id: editId,
-        title: document.getElementById("boardTitleInput").value.trim(),
-        description: document.getElementById("boardDescInput").value.trim(),
-        ownerId: session.creatorId,
-        ownerName: session.displayName,
-        visibility: document.getElementById("boardVisibilityInput").value,
-        password: "__KEEP__",
-        archived: !currentlyArchived
-      });
+      try {
+        const res = await SlateStorage.saveBoard({
+          id: editId,
+          title: document.getElementById("boardTitleInput").value.trim(),
+          description: document.getElementById("boardDescInput").value.trim(),
+          ownerId: session.creatorId,
+          ownerName: session.displayName,
+          visibility: document.getElementById("boardVisibilityInput").value,
+          password: "__KEEP__",
+          archived: !currentlyArchived
+        });
 
-      if (res && res.error === "limit_reached") {
-        alert(`You already have ${MAX_ACTIVE_BOARDS} active boards. Archive or delete another board first.`);
-        return;
+        if (res && res.error === "limit_reached") {
+          alert(`You already have ${MAX_ACTIVE_BOARDS} active boards. Archive or delete another board first.`);
+          return;
+        }
+
+        document.getElementById("boardModal").classList.add("hidden");
+        showDashboard();
+      } catch (err) {
+        console.error(err);
+        alert(`Could not update archive status: ${err.message || err}`);
       }
-
-      document.getElementById("boardModal").classList.add("hidden");
-      showDashboard();
     });
 
     document.getElementById("deleteBoardBtn").addEventListener("click", async () => {
       const editId = document.getElementById("editBoardId").value;
       if (!confirm("Delete this board and all its posts permanently?")) return;
-      await SlateStorage.deleteBoard(editId);
-      document.getElementById("boardModal").classList.add("hidden");
-      showDashboard();
+      try {
+        await SlateStorage.deleteBoard(editId);
+        document.getElementById("boardModal").classList.add("hidden");
+        showDashboard();
+      } catch (err) {
+        console.error(err);
+        alert(`Could not delete board: ${err.message || err}`);
+      }
     });
 
     document.getElementById("passwordGateForm").addEventListener("submit", async e => {

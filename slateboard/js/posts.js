@@ -80,7 +80,7 @@ const SlatePosts = (() => {
           <div class="pdf-card-preview">
             <div class="pdf-badge">📄 PDF Document</div>
             <div style="display:flex;gap:6px;">
-              <button class="mini-btn" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Preview</button>
+              <button class="mini-btn" type="button" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Preview</button>
               <a class="mini-btn" href="${escapeHtml(media.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
             </div>
           </div>
@@ -117,8 +117,8 @@ const SlatePosts = (() => {
             <h3 class="post-title">${escapeHtml(post.title)}</h3>
             ${isOwner ? `
               <div class="post-actions">
-                <button class="mini-btn pin-toggle-btn" title="Pin or Unpin">${post.pinned ? "Unpin" : "📌 Pin"}</button>
-                <button class="mini-btn delete-post-btn" title="Delete Post">✕</button>
+                <button class="mini-btn pin-toggle-btn" type="button" title="Pin or Unpin">${post.pinned ? "Unpin" : "📌 Pin"}</button>
+                <button class="mini-btn delete-post-btn" type="button" title="Delete Post">✕</button>
               </div>
             ` : ""}
           </div>

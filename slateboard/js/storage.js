@@ -7,8 +7,20 @@ const SlateStorage = (() => {
   const SESSION_KEY = "slateboard_creator_session_v1";
   const THEME_KEY = "slateboard_theme_v1";
 
+  function assertConfigured() {
+    if (
+      !SUPABASE_URL ||
+      SUPABASE_URL.includes("YOUR_PROJECT_ID") ||
+      !SUPABASE_CLIENT_KEY ||
+      SUPABASE_CLIENT_KEY.includes("YOUR_SUPABASE_")
+    ) {
+      throw new Error("Missing SUPABASE_URL or SUPABASE_CLIENT_KEY in js/storage.js");
+    }
+  }
+
   async function rpc(fnName, params = {}) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`, {
+    assertConfigured();
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/rpc/${fnName}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -9,7 +9,7 @@
     .guide-layout {
       max-width: 1160px;
       margin: 0 auto;
-      padding: 28px 20px 72px;
+      padding: 24px 16px 72px;
       display: grid;
       grid-template-columns: 240px minmax(0, 1fr);
       gap: 24px;
@@ -19,6 +19,7 @@
     @media (max-width: 820px) {
       .guide-layout {
         grid-template-columns: 1fr;
+        gap: 16px;
       }
     }
 
@@ -30,6 +31,55 @@
       border-radius: var(--radius);
       padding: 16px;
       box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    @media (max-width: 820px) {
+      .guide-sidebar {
+        position: static;
+        padding: 12px 14px;
+      }
+    }
+
+    .guide-drawer summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .guide-drawer summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .drawer-chevron {
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: transform 0.15s ease;
+    }
+
+    .guide-drawer[open] .drawer-chevron {
+      transform: rotate(180deg);
+    }
+
+    @media (min-width: 821px) {
+      .guide-drawer summary {
+        display: none;
+      }
+    }
+
+    .sidebar-content {
+      margin-top: 12px;
+    }
+
+    @media (min-width: 821px) {
+      .sidebar-content {
+        margin-top: 0;
+      }
     }
 
     .sidebar-label {
@@ -79,7 +129,7 @@
       text-decoration: none;
       color: var(--muted);
       font-size: 0.84rem;
-      padding: 4px 8px;
+      padding: 5px 8px;
       border-radius: 6px;
     }
 
@@ -98,7 +148,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 22px;
       box-shadow: var(--shadow);
       display: flex;
       align-items: flex-start;
@@ -135,7 +185,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 22px 24px;
+      padding: 20px 22px;
       box-shadow: var(--shadow);
       scroll-margin-top: 84px;
     }
@@ -232,7 +282,7 @@
         <span class="brand-name">SlateBoard</span>
       </a>
 
-      <div class="topbar-actions">
+      <div class="topbar-actions" style="grid-template-columns: 1fr;">
         <a class="btn btn-ghost" href="../index.html">← SlateBoard App</a>
         <button id="themeToggleBtn" class="btn btn-ghost icon-btn" type="button" aria-label="Toggle theme">
           <span id="themeIcon">🌙</span>
@@ -243,36 +293,45 @@
 
   <div class="guide-layout">
     <aside class="guide-sidebar" aria-label="Guide navigation">
-      <p class="sidebar-label">Role Guides</p>
-      <nav class="sidebar-nav">
-        <a class="sidebar-link" href="#students">
-          <span>Students</span>
-          <span>→</span>
-        </a>
-        <a class="sidebar-link" href="#educators">
-          <span>Educators</span>
-          <span>→</span>
-        </a>
-      </nav>
+      <details id="guideDrawer" class="guide-drawer" open>
+        <summary>
+          <span>Guide Menu (Students &amp; Educators)</span>
+          <span class="drawer-chevron">▼</span>
+        </summary>
 
-      <div class="sidebar-sub">
-        <span class="sidebar-label" style="margin-bottom:4px;">On This Page</span>
-        <a href="#student-joining">Joining &amp; Posting Work</a>
-        <a href="#student-critique">Peer Feedback &amp; Links</a>
-        <a href="#educator-boards">Creating &amp; Managing Boards</a>
-        <a href="#educator-sync">Cross-Device Identity &amp; PDF</a>
-      </div>
+        <div class="sidebar-content">
+          <p class="sidebar-label">Role Guides</p>
+          <nav class="sidebar-nav">
+            <a class="sidebar-link" href="#students">
+              <span>Students</span>
+              <span>→</span>
+            </a>
+            <a class="sidebar-link" href="#educators">
+              <span>Educators</span>
+              <span>→</span>
+            </a>
+          </nav>
 
-      <div class="sidebar-sub">
-        <a class="btn btn-primary" href="../index.html" style="margin-top:4px;">Open SlateBoard</a>
-      </div>
+          <div class="sidebar-sub">
+            <span class="sidebar-label" style="margin-bottom:4px;">On This Page</span>
+            <a href="#student-joining">Joining &amp; Posting Work</a>
+            <a href="#student-critique">Peer Feedback &amp; Links</a>
+            <a href="#educator-boards">Creating &amp; Managing Boards</a>
+            <a href="#educator-sync">Cross-Device Identity &amp; PDF</a>
+          </div>
+
+          <div class="sidebar-sub">
+            <a class="btn btn-primary" href="../index.html" style="margin-top:4px;color:#fff;">Open SlateBoard</a>
+          </div>
+        </div>
+      </details>
     </aside>
 
     <main class="guide-main">
       <div class="guide-header">
         <div>
           <h1>SlateBoard Onboarding Guide</h1>
-          <p class="subtitle">Choose <strong>Students</strong> or <strong>Educators</strong> in the sidebar to see workflows tailored to submitting work or running collaborative studio boards.</p>
+          <p class="subtitle">Choose <strong>Students</strong> or <strong>Educators</strong> in the menu to see workflows tailored to submitting work or running collaborative studio boards.</p>
         </div>
         <div class="guide-actions">
           <button id="printPdfBtn" class="btn btn-primary" type="button">Save / Print PDF</button>
@@ -326,7 +385,7 @@
         <h3>2. Peer Critique, Sorting &amp; Media Preview</h3>
         <ul class="guide-list">
           <li><strong>Leave comments:</strong> Type feedback into the comment box at the bottom of any post card and press <strong>Post</strong> so classmates and collaborators can read your notes.</li>
-          <li><strong>Inspect large work:</strong> Click an image to open the lightbox view, or click <strong>Preview</strong> / <strong>Open ↗</strong> on PDF cards to inspect details.</li>
+          <li><strong>Inspect large work:</strong> Click an image to open the lightbox view, or click <strong>Expand</strong> / <strong>Open ↗</strong> on PDF cards to inspect details.</li>
           <li><strong>Browse efficiently:</strong> Use the <strong>Sort</strong> menu in the board header to sort posts by <em>Newest First</em>, <em>Oldest First</em>, or <em>Title (A–Z)</em>.</li>
         </ul>
       </section>
@@ -379,6 +438,25 @@
 
       document.getElementById("printPdfBtn").addEventListener("click", () => {
         window.print();
+      });
+
+      const drawer = document.getElementById("guideDrawer");
+      function syncDrawerForViewport() {
+        if (window.innerWidth <= 820) {
+          drawer.removeAttribute("open");
+        } else {
+          drawer.setAttribute("open", "");
+        }
+      }
+      syncDrawerForViewport();
+      window.addEventListener("resize", syncDrawerForViewport);
+
+      drawer.querySelectorAll("a[href^='#']").forEach(link => {
+        link.addEventListener("click", () => {
+          if (window.innerWidth <= 820) {
+            drawer.removeAttribute("open");
+          }
+        });
       });
     });
   </script>

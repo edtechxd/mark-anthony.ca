@@ -1,6 +1,6 @@
-// SlateBoard Posts, Owner-Hosted Media Links, Pinned Items, Sorting & Comments
+// SlateBoard Posts, Owner-Hosted Media Links, Pinned Items, Sorting & Cloud Comments
 const SlatePosts = (() => {
-  let activeBoardId = null;
+  let currentBoard = null;
 
   function escapeHtml(str) {
     return String(str || "")
@@ -14,7 +14,6 @@ const SlatePosts = (() => {
     const url = (rawUrl || "").trim();
     if (!url) return { kind: "none", url: "" };
 
-    // Google Drive file share link -> direct image or preview embed
     const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
     if (driveMatch) {
       const fileId = driveMatch[1];
@@ -24,7 +23,6 @@ const SlatePosts = (() => {
       return { kind: "iframe", url: `https://drive.google.com/file/d/${fileId}/preview` };
     }
 
-    // Dropbox share link -> raw media
     if (url.includes("dropbox.com")) {
       const direct = url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace(/[?&]dl=0/, "");
       if (type === "image") return { kind: "image", url: direct };
@@ -32,12 +30,10 @@ const SlatePosts = (() => {
     }
 
     if (type === "video") {
-      // YouTube
       const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
       if (ytMatch) {
         return { kind: "iframe", url: `https://www.youtube.com/embed/${ytMatch[1]}` };
       }
-      // Vimeo
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
       if (vimeoMatch) {
         return { kind: "iframe", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
@@ -45,14 +41,8 @@ const SlatePosts = (() => {
       return { kind: "video", url };
     }
 
-    if (type === "image") {
-      return { kind: "image", url };
-    }
-
-    if (type === "pdf") {
-      return { kind: "pdf", url };
-    }
-
+    if (type === "image") return { kind: "image", url };
+    if (type === "pdf") return { kind: "pdf", url };
     return { kind: "none", url };
   }
 
@@ -91,7 +81,7 @@ const SlatePosts = (() => {
             <div class="pdf-badge">📄 PDF Document</div>
             <div style="display:flex;gap:6px;">
               <button class="mini-btn" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Preview</button>
-              <a class="mini-btn" href="${escapeHtml(post.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
+              <a class="mini-btn" href="${escapeHtml(media.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
             </div>
           </div>
         </div>
@@ -107,13 +97,13 @@ const SlatePosts = (() => {
       return copy.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" }));
     }
     if (mode === "oldest") {
-      return copy.sort((a, b) => a.createdAt - b.createdAt);
+      return copy.sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
     }
-    return copy.sort((a, b) => b.createdAt - a.createdAt);
+    return copy.sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
   }
 
   function renderPostCard(post, isOwner) {
-    const dateStr = new Date(post.createdAt).toLocaleDateString(undefined, {
+    const dateStr = new Date(Number(post.createdAt)).toLocaleDateString(undefined, {
       month: "short",
       day: "numeric"
     });
@@ -158,7 +148,7 @@ const SlatePosts = (() => {
   }
 
   function renderBoard(board) {
-    activeBoardId = board.id;
+    currentBoard = board;
     const session = SlateStorage.getSession();
     const isOwner = board.ownerId === session.creatorId;
 
@@ -170,11 +160,7 @@ const SlatePosts = (() => {
     privacyBadge.className = `pill ${board.visibility === "private" ? "pill-private" : "pill-public"}`;
 
     const passBadge = document.getElementById("boardPasswordBadge");
-    if (board.password) {
-      passBadge.classList.remove("hidden");
-    } else {
-      passBadge.classList.add("hidden");
-    }
+    passBadge.classList.toggle("hidden", !board.hasPassword);
 
     document.querySelectorAll(".owner-only").forEach(el => {
       el.classList.toggle("hidden", !isOwner);
@@ -216,54 +202,36 @@ const SlatePosts = (() => {
 
       const pinBtn = card.querySelector(".pin-toggle-btn");
       if (pinBtn) {
-        pinBtn.addEventListener("click", () => {
-          const boards = SlateStorage.getAllBoards();
-          const board = boards.find(b => b.id === activeBoardId);
-          const post = board && board.posts.find(p => p.id === postId);
-          if (post) {
-            post.pinned = !post.pinned;
-            SlateStorage.saveAllBoards(boards);
-            renderBoard(board);
-          }
+        pinBtn.addEventListener("click", async () => {
+          await SlateStorage.managePost(currentBoard.id, postId, "toggle_pin");
+          await SlateBoards.openBoard(currentBoard.id);
         });
       }
 
       const delBtn = card.querySelector(".delete-post-btn");
       if (delBtn) {
-        delBtn.addEventListener("click", () => {
+        delBtn.addEventListener("click", async () => {
           if (!confirm("Remove this post?")) return;
-          const boards = SlateStorage.getAllBoards();
-          const board = boards.find(b => b.id === activeBoardId);
-          if (board) {
-            board.posts = board.posts.filter(p => p.id !== postId);
-            SlateStorage.saveAllBoards(boards);
-            renderBoard(board);
-          }
+          await SlateStorage.managePost(currentBoard.id, postId, "delete");
+          await SlateBoards.openBoard(currentBoard.id);
         });
       }
 
       const commentForm = card.querySelector(".comment-form");
-      commentForm.addEventListener("submit", e => {
+      commentForm.addEventListener("submit", async e => {
         e.preventDefault();
         const input = commentForm.querySelector("input");
         const text = input.value.trim();
         if (!text) return;
 
         const session = SlateStorage.getSession();
-        const boards = SlateStorage.getAllBoards();
-        const board = boards.find(b => b.id === activeBoardId);
-        const post = board && board.posts.find(p => p.id === postId);
-        if (post) {
-          post.comments = post.comments || [];
-          post.comments.push({
-            id: "c_" + Date.now().toString(36),
-            authorName: session.displayName,
-            text,
-            createdAt: Date.now()
-          });
-          SlateStorage.saveAllBoards(boards);
-          renderBoard(board);
-        }
+        await SlateStorage.addComment(postId, {
+          id: "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          authorName: session.displayName,
+          text,
+          createdAt: Date.now()
+        });
+        await SlateBoards.openBoard(currentBoard.id);
       });
 
       card.querySelectorAll("[data-lightbox-url]").forEach(trigger => {
@@ -284,17 +252,15 @@ const SlatePosts = (() => {
 
   function init() {
     document.getElementById("sortSelect").addEventListener("change", () => {
-      const board = SlateStorage.getAllBoards().find(b => b.id === activeBoardId);
-      if (board) renderBoard(board);
+      if (currentBoard) renderBoard(currentBoard);
     });
 
     document.getElementById("boardSettingsBtn").addEventListener("click", () => {
-      const board = SlateStorage.getAllBoards().find(b => b.id === activeBoardId);
-      if (board) SlateBoards.openEditModal(board);
+      if (currentBoard) SlateBoards.openEditModal(currentBoard);
     });
 
     document.getElementById("shareBoardBtn").addEventListener("click", () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}?board=${encodeURIComponent(activeBoardId)}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}?board=${encodeURIComponent(currentBoard.id)}`;
       document.getElementById("shareUrlInput").value = shareUrl;
       document.getElementById("shareModal").classList.remove("hidden");
     });
@@ -329,33 +295,26 @@ const SlatePosts = (() => {
       urlInput.required = needsUrl;
     });
 
-    document.getElementById("postForm").addEventListener("submit", e => {
+    document.getElementById("postForm").addEventListener("submit", async e => {
       e.preventDefault();
+      if (!currentBoard) return;
       const session = SlateStorage.getSession();
-      const boards = SlateStorage.getAllBoards();
-      const board = boards.find(b => b.id === activeBoardId);
-      if (!board) return;
-
-      const isOwner = board.ownerId === session.creatorId;
       const type = document.getElementById("postTypeInput").value;
-      const newPost = {
-        id: "post_" + Date.now().toString(36),
+
+      await SlateStorage.addPost(currentBoard.id, {
+        id: "post_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
         title: document.getElementById("postTitleInput").value.trim(),
         type,
         url: type === "note" ? "" : document.getElementById("postUrlInput").value.trim(),
         body: document.getElementById("postBodyInput").value.trim(),
         authorName: session.displayName,
         authorId: session.creatorId,
-        pinned: isOwner ? document.getElementById("postPinnedInput").checked : false,
-        createdAt: Date.now(),
-        comments: []
-      };
+        pinned: document.getElementById("postPinnedInput").checked,
+        createdAt: Date.now()
+      });
 
-      board.posts = board.posts || [];
-      board.posts.push(newPost);
-      SlateStorage.saveAllBoards(boards);
       document.getElementById("postModal").classList.add("hidden");
-      renderBoard(board);
+      await SlateBoards.openBoard(currentBoard.id);
     });
   }
 
@@ -367,7 +326,6 @@ const SlatePosts = (() => {
 
 // App Bootstrap
 document.addEventListener("DOMContentLoaded", () => {
-  // Theme init
   const savedTheme = SlateStorage.getTheme();
   SlateStorage.setTheme(savedTheme);
   document.getElementById("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
@@ -378,7 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
   });
 
-  // Creator Session UI
   function syncSessionUI() {
     const session = SlateStorage.getSession();
     document.getElementById("openSessionBtn").textContent = session.displayName;
@@ -387,7 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("openSessionBtn").addEventListener("click", () => {
     const session = SlateStorage.getSession();
-    document.getElementById("creatorNameInput").value = session.displayName === "Guest Creator" ? "" : session.displayName;
+    document.getElementById("creatorNameInput").value = session.displayName.startsWith("Guest Creator") ? "" : session.displayName;
     document.getElementById("creatorPasskeyInput").value = "";
     document.getElementById("sessionModal").classList.remove("hidden");
   });
@@ -409,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
     SlateBoards.showDashboard();
   });
 
-  // Generic modal close buttons
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById(btn.dataset.close).classList.add("hidden");
@@ -419,7 +375,6 @@ document.addEventListener("DOMContentLoaded", () => {
   SlateBoards.init();
   SlatePosts.init();
 
-  // Route to shared board if ?board= is present
   const params = new URLSearchParams(window.location.search);
   const sharedBoardId = params.get("board");
   if (sharedBoardId) {

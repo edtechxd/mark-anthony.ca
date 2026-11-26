@@ -1,8 +1,29 @@
-// SlateBoard Storage & Creator Passkey Session (No Google Auth, No File Uploads)
+// SlateBoard Cloud Storage via Supabase RPC (Zero Cost, Server-Hashed Passwords)
 const SlateStorage = (() => {
+  // Replace with your Supabase Project URL and Publishable / Anon key:
+  const SUPABASE_URL = "https://fywlcirgbhsawxdskklw.supabase.co";
+  const SUPABASE_CLIENT_KEY = "sb_publishable_wdMVOO0gaeYjlQ7JDmaMuA_oluVurKt";
+
   const SESSION_KEY = "slateboard_creator_session_v1";
-  const BOARDS_KEY = "slateboard_boards_v1";
   const THEME_KEY = "slateboard_theme_v1";
+
+  async function rpc(fnName, params = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_CLIENT_KEY,
+        Authorization: `Bearer ${SUPABASE_CLIENT_KEY}`
+      },
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Supabase RPC error (${res.status}): ${errText}`);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
 
   function hashPasskey(name, passkey) {
     const raw = `${name.trim().toLowerCase()}::${passkey.trim()}`;
@@ -19,9 +40,8 @@ const SlateStorage = (() => {
       const saved = localStorage.getItem(SESSION_KEY);
       if (saved) return JSON.parse(saved);
     } catch (_) {}
-    // Default local guest creator session so users can test immediately
     const fallback = {
-      creatorId: "creator_guest_local",
+      creatorId: "creator_guest_" + Math.random().toString(36).slice(2, 8),
       displayName: "Guest Creator"
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(fallback));
@@ -43,59 +63,75 @@ const SlateStorage = (() => {
     return getSession();
   }
 
-  function seedDefaultBoards(creatorId, creatorName) {
-    const sample = [
-      {
-        id: "board_welcome_2026",
-        title: "Design Critique & Visual References",
-        description: "Share external image links, YouTube/Vimeo breakdowns, and self-hosted PDFs for peer feedback.",
-        ownerId: creatorId,
-        ownerName: creatorName,
-        visibility: "public",
-        password: "",
-        archived: false,
-        createdAt: Date.now() - 86400000,
-        posts: [
-          {
-            id: "post_welcome_1",
-            title: "Welcome to SlateBoard (Pinned Guide)",
-            type: "note",
-            url: "",
-            body: "All media on this board stays hosted on your own links (Google Drive, Dropbox, GitHub, YouTube, or Vimeo). Add a post or leave a comment below!",
-            authorName: creatorName,
-            authorId: creatorId,
-            pinned: true,
-            createdAt: Date.now() - 82000000,
-            comments: [
-              {
-                id: "c_1",
-                authorName: "Peer Reviewer",
-                text: "Clean layout! Love that our files stay on our own cloud drives.",
-                createdAt: Date.now() - 3600000
-              }
-            ]
-          }
-        ]
-      }
-    ];
-    saveAllBoards(sample);
-    return sample;
-  }
-
-  function getAllBoards() {
-    try {
-      const raw = localStorage.getItem(BOARDS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (_) {}
+  async function getCreatorBoards() {
     const session = getSession();
-    return seedDefaultBoards(session.creatorId, session.displayName);
+    return (await rpc("get_creator_boards", { p_owner_id: session.creatorId })) || [];
   }
 
-  function saveAllBoards(boards) {
-    localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
+  async function getBoardDetail(boardId, password = "") {
+    const session = getSession();
+    return await rpc("get_board_detail", {
+      p_board_id: boardId,
+      p_requester_id: session.creatorId,
+      p_password: password
+    });
+  }
+
+  async function saveBoard(board) {
+    return await rpc("upsert_board", {
+      p_id: board.id,
+      p_title: board.title,
+      p_description: board.description || "",
+      p_owner_id: board.ownerId,
+      p_owner_name: board.ownerName,
+      p_visibility: board.visibility || "public",
+      p_password: board.password,
+      p_archived: Boolean(board.archived),
+      p_created_at: board.createdAt || Date.now()
+    });
+  }
+
+  async function deleteBoard(boardId) {
+    const session = getSession();
+    await rpc("delete_board_secure", {
+      p_board_id: boardId,
+      p_owner_id: session.creatorId
+    });
+  }
+
+  async function addPost(boardId, post) {
+    await rpc("add_post_secure", {
+      p_id: post.id,
+      p_board_id: boardId,
+      p_title: post.title,
+      p_type: post.type,
+      p_url: post.url || "",
+      p_body: post.body || "",
+      p_author_name: post.authorName,
+      p_author_id: post.authorId,
+      p_pinned: Boolean(post.pinned),
+      p_created_at: post.createdAt
+    });
+  }
+
+  async function managePost(boardId, postId, action) {
+    const session = getSession();
+    await rpc("manage_post_secure", {
+      p_post_id: postId,
+      p_board_id: boardId,
+      p_owner_id: session.creatorId,
+      p_action: action
+    });
+  }
+
+  async function addComment(postId, comment) {
+    await rpc("add_comment_secure", {
+      p_id: comment.id,
+      p_post_id: postId,
+      p_author_name: comment.authorName,
+      p_text: comment.text,
+      p_created_at: comment.createdAt
+    });
   }
 
   function getTheme() {
@@ -111,8 +147,13 @@ const SlateStorage = (() => {
     getSession,
     setSession,
     clearSession,
-    getAllBoards,
-    saveAllBoards,
+    getCreatorBoards,
+    getBoardDetail,
+    saveBoard,
+    deleteBoard,
+    addPost,
+    managePost,
+    addComment,
     getTheme,
     setTheme
   };

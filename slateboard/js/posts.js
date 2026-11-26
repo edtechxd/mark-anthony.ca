@@ -14,12 +14,14 @@ const SlatePosts = (() => {
     const url = (rawUrl || "").trim();
     if (!url) return { kind: "none", url: "" };
 
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
     if (driveMatch) {
       const fileId = driveMatch[1];
       if (type === "image") {
-        return { kind: "image", url: `https://drive.google.com/uc?export=view&id=${fileId}` };
+        return { kind: "image", url: `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600` };
       }
+  return { kind: "iframe", url: `https://drive.google.com/file/d/${fileId}/preview` };
+}
       if (type === "pdf") {
         return { kind: "pdf", url: `https://drive.google.com/file/d/${fileId}/preview` };
       }

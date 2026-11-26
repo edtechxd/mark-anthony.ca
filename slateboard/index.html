@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlateBoard — Spatial Collaborative Boards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <!-- Frosted Glass Header -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" id="brandHomeBtn" role="button" tabindex="0">
+        <div class="brand-mark">SB</div>
+        <div class="brand-text">
+          <span class="brand-title">SlateBoard</span>
+          <span class="brand-badge">2026</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="quota-pill" id="quotaPill" title="Active boards limit">
+          <span class="quota-dot"></span>
+          <span id="quotaText">0 / 10 Active Boards</span>
+        </div>
+
+        <button class="btn btn-ghost" id="themeToggleBtn" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+
+        <div id="authArea">
+          <button class="btn btn-primary" id="openSessionBtn">Creator Sign In</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="workspace">
+    <!-- Dashboard View -->
+    <section id="dashboardView" class="view-section">
+      <div class="section-header">
+        <div>
+          <h1 class="page-title">Your Boards</h1>
+          <p class="page-subtitle">Create up to 10 active boards. Media is linked directly from your own hosts.</p>
+        </div>
+        <div class="header-controls">
+          <div class="segmented-control" role="tablist">
+            <button class="seg-btn active" data-filter="active">Active (<span id="activeCount">0</span>)</button>
+            <button class="seg-btn" data-filter="archived">Archived (<span id="archivedCount">0</span>)</button>
+          </div>
+          <button class="btn btn-primary" id="newBoardBtn">+ New Board</button>
+        </div>
+      </div>
+
+      <div id="quotaBanner" class="banner banner-warning hidden">
+        <span>You have reached the maximum of <strong>10 active boards</strong>. Archive or delete an existing board to create a new one.</span>
+      </div>
+
+      <div id="boardsGrid" class="bento-grid"></div>
+    </section>
+
+    <!-- Single Board View -->
+    <section id="boardView" class="view-section hidden">
+      <div class="board-toolbar">
+        <div class="board-toolbar-left">
+          <button class="btn btn-ghost" id="backToDashboardBtn">← Boards</button>
+          <div>
+            <div class="board-title-row">
+              <h2 id="currentBoardTitle" class="board-heading">Board Title</h2>
+              <span id="boardPrivacyBadge" class="pill pill-public">Public</span>
+              <span id="boardPasswordBadge" class="pill pill-lock hidden">🔒 Password Protected</span>
+            </div>
+            <p id="currentBoardDesc" class="board-desc">Board description</p>
+          </div>
+        </div>
+
+        <div class="board-toolbar-right">
+          <label class="sort-control">
+            <span>Sort</span>
+            <select id="sortSelect">
+              <option value="newest">Newest to Oldest</option>
+              <option value="oldest">Date (Oldest First)</option>
+              <option value="alpha">Alphabetical (A–Z)</option>
+            </select>
+          </label>
+
+          <button class="btn btn-secondary" id="shareBoard

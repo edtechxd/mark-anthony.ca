@@ -1,0 +1,66 @@
+/* ==========================================================================
+SlateBoard 2026-2027 Spatial Bento & Hairline Glass Stylesheet
+========================================================================== */
+
+:root {
+--bg-dot: rgba(100, 116, 139, 0.14);
+}
+
+html.dark {
+--bg-dot: rgba(148, 163, 184, 0.09);
+}
+
+body {
+background-image: radial-gradient(var(--bg-dot) 1px, transparent 1px);
+background-size: 24px 24px;
+transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.glass-nav {
+backdrop-filter: blur(18px) saturate(180%);
+-webkit-backdrop-filter: blur(18px) saturate(180%);
+}
+
+.bento-card {
+transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+box-shadow 0.22s ease,
+border-color 0.22s ease;
+}
+
+.bento-card:hover {
+transform: translateY(-2px);
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+
+::-webkit-scrollbar-track {
+background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+background: rgba(148, 163, 184, 0.35);
+border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: rgba(148, 163, 184, 0.55);
+}
+
+@keyframes fadeSlideUp {
+from {
+opacity: 0;
+transform: translateY(8px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.animate-in {
+animation: fadeSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlateBoard Guide — Students & Educators</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <style>
+    .guide-layout {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 820px) {
+      .guide-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .guide-sidebar {
+      position: sticky;
+      top: 76px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-label {
+      margin: 0 0 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .sidebar-link:hover {
+      background: var(--surface-2);
+      border-color: var(--border);
+    }
+
+    .sidebar-sub {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-sub a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.84rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .sidebar-sub a:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .guide-main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .guide-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .guide-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .role-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .role-banner.educator-banner {
+      border-left-color: #0f766e;
+    }
+
+    .role-banner h2 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+    }
+
+    .guide-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      scroll-margin-top: 84px;
+    }
+
+    .guide-section h3 {
+      margin: 0 0 10px;
+      font-size: 1.12rem;
+    }
+
+    .guide-section p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .guide-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .guide-list {
+      margin: 0;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .guide-list strong {
+      color: var(--text);
+    }
+
+    .callout-box {
+      background: var(--surface-2);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .guide-table th,
+    .guide-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .guide-table th {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    @media print {
+      .topbar,
+      .guide-sidebar,
+      .guide-actions {
+        display: none !important;
+      }
+
+      .guide-layout {
+        display: block;
+        padding: 0;
+      }
+
+      body {
+        background: #ffffff;
+        color: #111827;
+      }
+
+      .guide-header,
+      .role-banner,
+      .guide-section {
+        box-shadow: none;
+        border: 1px solid #d1d5db;
+        break-inside: avoid;
+        margin-bottom: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-btn" href="../index.html">
+        <span class="brand-mark">SB</span>
+        <span class="brand-name">SlateBoard</span>
+      </a>
+
+      <div class="topbar-actions">
+        <a class="btn btn-ghost" href="../index.html">← SlateBoard App</a>
+        <button id="themeToggleBtn" class="btn btn-ghost icon-btn" type="button" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="guide-layout">
+    <aside class="guide-sidebar" aria-label="Guide navigation">
+      <p class="sidebar-label">Role Guides</p>
+      <nav class="sidebar-nav">
+        <a class="sidebar-link" href="#students">
+          <span>Students</span>
+          <span>→</span>
+        </a>
+        <a class="sidebar-link" href="#educators">
+          <span>Educators</span>
+          <span>→</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-sub">
+        <span class="sidebar-label" style="margin-bottom:4px;">On This Page</span>
+        <a href="#student-joining">Joining &amp; Posting Work</a>
+        <a href="#student-critique">Peer Feedback &amp; Links</a>
+        <a href="#educator-boards">Creating &amp; Managing Boards</a>
+        <a href="#educator-sync">Cross-Device Identity &amp; PDF</a>
+      </div>
+
+      <div class="sidebar-sub">
+        <a class="btn btn-primary" href="../index.html" style="margin-top:4px;">Open SlateBoard</a>
+      </div>
+    </aside>
+
+    <main class="guide-main">
+      <div class="guide-header">
+        <div>
+          <h1>SlateBoard Onboarding Guide</h1>
+          <p class="subtitle">Choose <strong>Students</strong> or <strong>Educators</strong> in the sidebar to see workflows tailored to submitting work or running collaborative studio boards.</p>
+        </div>
+        <div class="guide-actions">
+          <button id="printPdfBtn" class="btn btn-primary" type="button">Save / Print PDF</button>
+          <a class="btn btn-ghost" href="../index.html">Go to Boards</a>
+        </div>
+      </div>
+
+      <!-- STUDENTS SECTION -->
+      <div id="students" class="role-banner" style="scroll-margin-top: 84px;">
+        <h2>Students</h2>
+        <p class="subtitle">For learners submitting drafts, sharing visual references, and leaving constructive peer critique.</p>
+      </div>
+
+      <section id="student-joining" class="guide-section">
+        <h3>1. Opening a Board &amp; Posting Your Work</h3>
+        <p>Your instructor or collaborator will typically send you a direct board link (ending in <code>?board=...</code>) and any required board password.</p>
+        <ol class="guide-list">
+          <li>Open the shared board link in your browser and enter the board password if prompted.</li>
+          <li>Click <strong>+ Add Post</strong> in the top-right toolbar of the board.</li>
+          <li>Choose a <strong>Post Type</strong>, give your post a clear title (such as your name and iteration/draft number), add context in <strong>Notes / Caption</strong>, and click <strong>Publish Post</strong>.</li>
+        </ol>
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>Post Type</th>
+              <th>Best For Student &amp; Collaborator Submissions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Note</strong></td>
+              <td>Design rationale, project notes, process reflections, or questions for critique.</td>
+            </tr>
+            <tr>
+              <td><strong>Image Link</strong></td>
+              <td>Layout spreads, mood boards, sketches, or mockups hosted via image URL, Google Drive, or Dropbox.</td>
+            </tr>
+            <tr>
+              <td><strong>Video Link</strong></td>
+              <td>Motion studies, walkthroughs, or screen recordings via YouTube, Vimeo, or direct <code>.mp4</code> link.</td>
+            </tr>
+            <tr>
+              <td><strong>PDF Link</strong></td>
+              <td>Multi-page decks, zines, or portfolios via a shareable PDF or Drive/Dropbox link.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="student-critique" class="guide-section">
+        <h3>2. Peer Critique, Sorting &amp; Media Preview</h3>
+        <ul class="guide-list">
+          <li><strong>Leave comments:</strong> Type feedback into the comment box at the bottom of any post card and press <strong>Post</strong> so classmates and collaborators can read your notes.</li>
+          <li><strong>Inspect large work:</strong> Click an image to open the lightbox view, or click <strong>Preview</strong> / <strong>Open ↗</strong> on PDF cards to inspect details.</li>
+          <li><strong>Browse efficiently:</strong> Use the <strong>Sort</strong> menu in the board header to sort posts by <em>Newest First</em>, <em>Oldest First</em>, or <em>Title (A–Z)</em>.</li>
+        </ul>
+      </section>
+
+      <!-- EDUCATORS SECTION -->
+      <div id="educators" class="role-banner educator-banner" style="scroll-margin-top: 84px;">
+        <h2>Educators</h2>
+        <p class="subtitle">For faculty and board creators setting up critiques, pinning prompts, managing quotas, and syncing across devices.</p>
+      </div>
+
+      <section id="educator-boards" class="guide-section">
+        <h3>1. Creating Boards, Pinning Prompts &amp; Moderating Posts</h3>
+        <p>Educators and board creators can manage up to <strong>20 active boards</strong> at a time and control board visibility and access.</p>
+        <ul class="guide-list">
+          <li><strong>Create a board:</strong> Click <strong>+ New Board</strong> on the dashboard, add a title and prompt/instructions in <strong>Description</strong>, choose <strong>Public</strong> or <strong>Private</strong>, and set an optional <strong>Board Password</strong>.</li>
+          <li><strong>Pin briefs and rubrics:</strong> Publish a post with your assignment brief or critique guidelines and check <strong>Pin this post to the top of the board</strong> (or click <strong>📌 Pin</strong> on an existing post) so it stays prominent in the <strong>📌 Pinned</strong> section.</li>
+          <li><strong>Moderate and organize:</strong> As the board owner, you can pin/unpin or delete (<code>✕</code>) posts inside your boards, or click <strong>Settings</strong> to archive completed boards and free up active board slots.</li>
+          <li><strong>Share with classes or teams:</strong> Click <strong>Share</strong> inside a board to copy the <code>?board=...</code> URL and distribute it via your LMS, email, or chat.</li>
+        </ul>
+      </section>
+
+      <section id="educator-sync" class="guide-section">
+        <h3>2. Cross-Device Creator Identity &amp; Saving a PDF Copy</h3>
+        <p>Board ownership and your 20-board dashboard are tied to your derived creator identity rather than a separate password database.</p>
+        <ol class="guide-list">
+          <li>Click your identity button in the top-right header (initially <strong>Guest Creator</strong>), enter your <strong>Display Name</strong> and <strong>Creator Passkey</strong>, and click <strong>Save Identity</strong>.</li>
+          <li>When switching to another computer, tablet, or phone, sign in with the <strong>exact same Display Name and Creator Passkey</strong> to access your existing boards.</li>
+          <li>Need a handout or offline reference? Click <strong>Save / Print PDF</strong> at the top of this guide to print or save a clean PDF.</li>
+        </ol>
+        <div class="callout-box">
+          <strong>Classroom Note:</strong> Students and collaborators do not need to set a creator passkey just to open a shared board link, add posts, or post comments.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const themeKey = "slateboard_theme_v1";
+      const currentTheme = localStorage.getItem(themeKey) || "light";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      document.getElementById("themeIcon").textContent = currentTheme === "dark" ? "☀️" : "🌙";
+
+      document.getElementById("themeToggleBtn").addEventListener("click", () => {
+        const next = (localStorage.getItem(themeKey) || "light") === "dark" ? "light" : "dark";
+        localStorage.setItem(themeKey, next);
+        document.documentElement.setAttribute("data-theme", next);
+        document.getElementById("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
+      });
+
+      document.getElementById("printPdfBtn").addEventListener("click", () => {
+        window.print();
+      });
+    });
+  </script>
+</body>
+</html>

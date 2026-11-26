@@ -436,6 +436,10 @@ h1 {
   background: var(--accent-hover);
 }
 
+a.btn.btn-primary {
+    color: #ffffff;
+}
+
 .btn-ghost {
   background: var(--surface);
   color: var(--text);

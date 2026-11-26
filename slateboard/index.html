@@ -9,26 +9,17 @@
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="topbar-left">
-        <button id="brandHomeBtn" class="brand-btn" type="button">
-          <span class="brand-mark">SB</span>
-          <span class="brand-name">SlateBoard</span>
-        </button>
-        <a id="guideLinkBtn" class="btn btn-primary btn-sm" href="./guide/">Guide</a>
-      </div>
+      <button id="brandHomeBtn" class="brand-btn" type="button">
+        <span class="brand-mark">SB</span>
+        <span class="brand-name">SlateBoard</span>
+      </button>
 
       <div class="topbar-actions">
+        <a id="guideLinkBtn" class="btn btn-ghost" href="./guide/">Guide</a>  
         <span id="quotaPill" class="quota-pill">
           <span id="quotaText">0 / 20 Active Boards</span>
         </span>
-        <div class="search-wrap">
-          <span class="search-icon" aria-hidden="true">🔍</span>
-          <input id="globalSearchInput" class="search-input" type="search" placeholder="Search boards or posts..." aria-label="Search boards or posts" />
-        </div>
-        <button id="openSessionBtn" class="btn btn-ghost" type="button">
-          <span id="sessionAvatar" class="avatar-chip">GC</span>
-          <span id="sessionNameLabel">Guest Creator</span>
-        </button>
+        <button id="openSessionBtn" class="btn btn-ghost" type="button">Guest Creator</button>
         <button id="themeToggleBtn" class="btn btn-ghost icon-btn" type="button" aria-label="Toggle theme">
           <span id="themeIcon">🌙</span>
         </button>
@@ -68,30 +59,17 @@
     <!-- Single Board View -->
     <section id="boardView" class="hidden">
       <div class="board-nav-row">
-        <div class="board-nav-left">
-          <button id="backToDashboardBtn" class="btn btn-ghost" type="button">← All Boards</button>
-          <div class="segmented" role="group" aria-label="Board layout view">
-            <button id="viewMasonryBtn" class="seg-btn active" data-layout="masonry" type="button">⊞ Masonry</button>
-            <button id="viewListBtn" class="seg-btn" data-layout="list" type="button">☰ List</button>
-          </div>
-        </div>
-
+        <button id="backToDashboardBtn" class="btn btn-ghost" type="button">← All Boards</button>
         <div class="board-toolbar-right">
-          <select id="typeFilterSelect" class="select-input" aria-label="Filter by post type">
-            <option value="all">All Types</option>
-            <option value="note">Notes</option>
-            <option value="image">Images</option>
-            <option value="video">Videos</option>
-            <option value="pdf">PDFs</option>
-          </select>
-          <select id="sortSelect" class="select-input" aria-label="Sort posts">
+          <label class="sort-label" for="sortSelect">Sort:</label>
+          <select id="sortSelect" class="select-input">
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
             <option value="alpha">Title (A–Z)</option>
           </select>
-          <button id="shareBoardBtn" class="btn btn-charcoal" type="button">Share</button>
+          <button id="shareBoardBtn" class="btn btn-ghost" type="button">Share</button>
           <button id="boardSettingsBtn" class="btn btn-ghost owner-only hidden" type="button">Settings</button>
-          <button id="newPostBtn" class="btn btn-primary" type="button">+ New Post</button>
+          <button id="newPostBtn" class="btn btn-primary" type="button">+ Add Post</button>
         </div>
       </div>
 
@@ -106,10 +84,10 @@
 
       <div id="pinnedSection" class="pinned-section hidden">
         <h2 class="section-heading">📌 Pinned</h2>
-        <div id="pinnedContainer" class="posts-grid layout-masonry"></div>
+        <div id="pinnedContainer" class="posts-grid"></div>
       </div>
 
-      <div id="postsGrid" class="posts-grid layout-masonry"></div>
+      <div id="postsGrid" class="posts-grid"></div>
     </section>
   </main>
 
@@ -187,7 +165,7 @@
   <div id="postModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="postModalTitle">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 id="postModalTitle">New Post</h2>
+        <h2 id="postModalTitle">Add Post</h2>
         <button class="icon-btn" data-close="postModal" type="button" aria-label="Close">✕</button>
       </div>
       <form id="postForm" class="stack-form">
@@ -268,7 +246,7 @@
         <p class="subtitle">Anyone with this link can open the board (subject to visibility and password settings).</p>
         <div class="share-row">
           <input id="shareUrlInput" type="text" readonly />
-          <button id="copyShareUrlBtn" class="btn btn-charcoal" type="button">Copy Link</button>
+          <button id="copyShareUrlBtn" class="btn btn-primary" type="button">Copy Link</button>
         </div>
       </div>
     </div>

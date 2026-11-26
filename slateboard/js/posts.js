@@ -1,8 +1,6 @@
-// SlateBoard Posts, Masonry/List Toggle, Type Filter, Search & Cloud Comments
+// SlateBoard Posts, Owner-Hosted Media Links, Pinned Items, Sorting & Cloud Comments
 const SlatePosts = (() => {
   let currentBoard = null;
-  let currentLayout = "masonry";
-  let searchQuery = "";
 
   function escapeHtml(str) {
     return String(str || "")
@@ -10,11 +8,6 @@ const SlatePosts = (() => {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
-  }
-
-  function getInitials(name) {
-    const parts = String(name || "P").trim().split(/\s+/);
-    return parts.slice(0, 2).map(p => p[0]).join("").toUpperCase() || "P";
   }
 
   function normalizeExternalMedia(type, rawUrl) {
@@ -54,14 +47,6 @@ const SlatePosts = (() => {
     if (type === "image") return { kind: "image", url };
     if (type === "pdf") return { kind: "pdf", url };
     return { kind: "none", url };
-  }
-
-  function renderTypeLabel(post) {
-    if (post.pinned) return `<span class="type-badge note-badge">📌 Pinned</span>`;
-    if (post.type === "image") return `<span class="type-badge">Image</span>`;
-    if (post.type === "video") return `<span class="type-badge">Video</span>`;
-    if (post.type === "pdf") return `<span class="type-badge">PDF</span>`;
-    return `<span class="type-badge note-badge">Note</span>`;
   }
 
   function renderMediaBlock(post) {
@@ -127,32 +112,24 @@ const SlatePosts = (() => {
       day: "numeric"
     });
     const comments = post.comments || [];
-    const authorName = post.authorName || "Peer";
-    const isNote = post.type === "note" || !post.url;
 
     return `
-      <article class="post-card ${isNote ? "is-note" : ""}" data-post-id="${escapeHtml(post.id)}">
-        <div class="post-card-top">
-          ${renderTypeLabel(post)}
-          ${isOwner ? `
-            <div class="post-actions">
-              <button class="mini-btn pin-toggle-btn" type="button" title="Pin or Unpin">${post.pinned ? "Unpin" : "📌 Pin"}</button>
-              <button class="mini-btn delete-post-btn" type="button" title="Delete Post">✕</button>
-            </div>
-          ` : ""}
-        </div>
-
+      <article class="post-card" data-post-id="${escapeHtml(post.id)}">
         ${renderMediaBlock(post)}
-
         <div class="post-body">
-          <h3 class="post-title">${escapeHtml(post.title)}</h3>
+          <div class="post-header-row">
+            <h3 class="post-title">${escapeHtml(post.title)}</h3>
+            ${isOwner ? `
+              <div class="post-actions">
+                <button class="mini-btn pin-toggle-btn" type="button" title="Pin or Unpin">${post.pinned ? "Unpin" : "📌 Pin"}</button>
+                <button class="mini-btn delete-post-btn" type="button" title="Delete Post">✕</button>
+              </div>
+            ` : ""}
+          </div>
           ${post.body ? `<p class="post-text">${escapeHtml(post.body)}</p>` : ""}
           <div class="post-meta">
-            <span class="author-row">
-              <span class="author-dot">${escapeHtml(getInitials(authorName))}</span>
-              <span>${escapeHtml(authorName)}</span>
-            </span>
-            <span>💬 ${comments.length} · ${dateStr}</span>
+            <span>By ${escapeHtml(post.authorName || "Peer")}</span>
+            <span>${dateStr}</span>
           </div>
         </div>
 
@@ -166,23 +143,12 @@ const SlatePosts = (() => {
             `).join("")}
           </div>
           <form class="comment-form">
-            <input type="text" placeholder="Add a critique comment..." required />
+            <input type="text" placeholder="Add a comment..." required />
             <button type="submit" class="mini-btn">Post</button>
           </form>
         </div>
       </article>
     `;
-  }
-
-  function applyLayoutClass() {
-    const pinnedContainer = document.getElementById("pinnedContainer");
-    const postsGrid = document.getElementById("postsGrid");
-    const cls = currentLayout === "list" ? "layout-list" : "layout-masonry";
-
-    pinnedContainer.classList.remove("layout-masonry", "layout-list");
-    postsGrid.classList.remove("layout-masonry", "layout-list");
-    pinnedContainer.classList.add(cls);
-    postsGrid.classList.add(cls);
   }
 
   function renderBoard(board) {
@@ -204,24 +170,10 @@ const SlatePosts = (() => {
       el.classList.toggle("hidden", !isOwner);
     });
 
-    applyLayoutClass();
-
     const sortMode = document.getElementById("sortSelect").value;
-    const typeFilter = document.getElementById("typeFilterSelect").value;
-    const q = searchQuery.trim().toLowerCase();
-
-    const filteredPosts = (board.posts || []).filter(p => {
-      if (typeFilter !== "all" && p.type !== typeFilter) return false;
-      if (!q) return true;
-      return (
-        (p.title || "").toLowerCase().includes(q) ||
-        (p.body || "").toLowerCase().includes(q) ||
-        (p.authorName || "").toLowerCase().includes(q)
-      );
-    });
-
-    const pinnedPosts = sortPosts(filteredPosts.filter(p => p.pinned), sortMode);
-    const regularPosts = sortPosts(filteredPosts.filter(p => !p.pinned), sortMode);
+    const allPosts = board.posts || [];
+    const pinnedPosts = sortPosts(allPosts.filter(p => p.pinned), sortMode);
+    const regularPosts = sortPosts(allPosts.filter(p => !p.pinned), sortMode);
 
     const pinnedSection = document.getElementById("pinnedSection");
     const pinnedContainer = document.getElementById("pinnedContainer");
@@ -237,10 +189,8 @@ const SlatePosts = (() => {
     if (regularPosts.length === 0 && pinnedPosts.length === 0) {
       postsGrid.innerHTML = `
         <div class="empty-state">
-          <h3>${q || typeFilter !== "all" ? "No matching posts" : "This board has no posts yet"}</h3>
-          <p>${q || typeFilter !== "all"
-            ? "Clear your search or switch the filter to view all posts."
-            : 'Click <strong>+ New Post</strong> to share a note, image link, video link, or PDF.'}</p>
+          <h3>This board has no posts yet</h3>
+          <p>Click <strong>+ Add Post</strong> to share a note, image link, video link, or self-hosted PDF.</p>
         </div>
       `;
     } else {
@@ -304,27 +254,7 @@ const SlatePosts = (() => {
     });
   }
 
-  function setSearchQuery(value) {
-    searchQuery = value || "";
-    if (currentBoard && !document.getElementById("boardView").classList.contains("hidden")) {
-      renderBoard(currentBoard);
-    }
-  }
-
   function init() {
-    document.querySelectorAll("[data-layout]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-layout]").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentLayout = btn.dataset.layout;
-        applyLayoutClass();
-      });
-    });
-
-    document.getElementById("typeFilterSelect").addEventListener("change", () => {
-      if (currentBoard) renderBoard(currentBoard);
-    });
-
     document.getElementById("sortSelect").addEventListener("change", () => {
       if (currentBoard) renderBoard(currentBoard);
     });
@@ -394,8 +324,7 @@ const SlatePosts = (() => {
 
   return {
     init,
-    renderBoard,
-    setSearchQuery
+    renderBoard
   };
 })();
 
@@ -413,18 +342,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function syncSessionUI() {
     const session = SlateStorage.getSession();
-    const parts = session.displayName.trim().split(/\s+/);
-    const initials = parts.slice(0, 2).map(p => p[0]).join("").toUpperCase() || "GC";
-    document.getElementById("sessionAvatar").textContent = initials;
-    document.getElementById("sessionNameLabel").textContent = session.displayName;
+    document.getElementById("openSessionBtn").textContent = session.displayName;
   }
   syncSessionUI();
-
-  document.getElementById("globalSearchInput").addEventListener("input", e => {
-    const val = e.target.value;
-    SlateBoards.setSearchQuery(val);
-    SlatePosts.setSearchQuery(val);
-  });
 
   document.getElementById("openSessionBtn").addEventListener("click", () => {
     const session = SlateStorage.getSession();

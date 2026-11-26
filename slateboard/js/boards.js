@@ -1,6 +1,6 @@
 // SlateBoard Boards Management (10-Board Limit, Archiving, Public/Private & Passwords)
 const SlateBoards = (() => {
-  const MAX_ACTIVE_BOARDS = 10;
+  const MAX_ACTIVE_BOARDS = 20;
   let currentFilter = "active";
   let unlockedBoards = new Set();
   let pendingUnlockBoardId = null;

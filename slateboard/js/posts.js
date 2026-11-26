@@ -1,4 +1,4 @@
-// SlateBoard Posts, Owner-Hosted Media Links, Pinned Items, Sorting & Cloud Comments
+// SlateBoard Posts, Owner-Hosted Media Links, 3-Column Masonry, Sorting & Cloud Comments
 const SlatePosts = (() => {
   let currentBoard = null;
 
@@ -159,6 +159,40 @@ const SlatePosts = (() => {
     `;
   }
 
+  function getColumnCount() {
+    if (window.innerWidth <= 620) return 1;
+    if (window.innerWidth <= 960) return 2;
+    return 3;
+  }
+
+  function renderMasonryColumns(container, posts, isOwner) {
+    const colCount = getColumnCount();
+    const cols = Array.from({ length: colCount }, () => []);
+    const colHeights = Array.from({ length: colCount }, () => 0);
+
+    posts.forEach(post => {
+      let targetIdx = 0;
+      for (let i = 1; i < colCount; i++) {
+        if (colHeights[i] < colHeights[targetIdx]) {
+          targetIdx = i;
+        }
+      }
+      cols[targetIdx].push(renderPostCard(post, isOwner));
+
+      const mediaWeight =
+        post.type === "image" ? 4.2 :
+        post.type === "pdf" ? 3.8 :
+        post.type === "video" ? 2.6 : 1.4;
+      const commentWeight = ((post.comments && post.comments.length) || 0) * 0.25;
+      colHeights[targetIdx] += mediaWeight + commentWeight;
+    });
+
+    container.classList.add("masonry-cols");
+    container.innerHTML = cols
+      .map(items => `<div class="masonry-col">${items.join("")}</div>`)
+      .join("");
+  }
+
   function renderBoard(board) {
     currentBoard = board;
     const session = SlateStorage.getSession();
@@ -187,7 +221,8 @@ const SlatePosts = (() => {
     const pinnedContainer = document.getElementById("pinnedContainer");
     if (pinnedPosts.length > 0) {
       pinnedSection.classList.remove("hidden");
-      pinnedContainer.innerHTML = pinnedPosts.map(p => renderPostCard(p, isOwner)).join("");
+      renderMasonryColumns(pinnedContainer, pinnedPosts, isOwner);
+      bindPostEventsIn(pinnedContainer);
     } else {
       pinnedSection.classList.add("hidden");
       pinnedContainer.innerHTML = "";
@@ -195,6 +230,7 @@ const SlatePosts = (() => {
 
     const postsGrid = document.getElementById("postsGrid");
     if (regularPosts.length === 0 && pinnedPosts.length === 0) {
+      postsGrid.classList.remove("masonry-cols");
       postsGrid.innerHTML = `
         <div class="empty-state">
           <h3>This board has no posts yet</h3>
@@ -202,14 +238,13 @@ const SlatePosts = (() => {
         </div>
       `;
     } else {
-      postsGrid.innerHTML = regularPosts.map(p => renderPostCard(p, isOwner)).join("");
+      renderMasonryColumns(postsGrid, regularPosts, isOwner);
+      bindPostEventsIn(postsGrid);
     }
-
-    bindPostEvents();
   }
 
-  function bindPostEvents() {
-    document.querySelectorAll(".post-card").forEach(card => {
+  function bindPostEventsIn(root = document) {
+    root.querySelectorAll(".post-card").forEach(card => {
       const postId = card.dataset.postId;
 
       const pinBtn = card.querySelector(".pin-toggle-btn");
@@ -328,6 +363,12 @@ const SlatePosts = (() => {
 
       document.getElementById("postModal").classList.add("hidden");
       await SlateBoards.openBoard(currentBoard.id);
+    });
+
+    window.addEventListener("resize", () => {
+      if (currentBoard && !document.getElementById("boardView").classList.contains("hidden")) {
+        renderBoard(currentBoard);
+      }
     });
   }
 

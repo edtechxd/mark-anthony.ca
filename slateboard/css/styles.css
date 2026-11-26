@@ -440,6 +440,10 @@ a.btn.btn-primary {
     color: #ffffff;
 }
 
+a.btn.btn-primary:hover {
+    color: #ffffff;
+}
+
 .btn-ghost {
   background: var(--surface);
   color: var(--text);

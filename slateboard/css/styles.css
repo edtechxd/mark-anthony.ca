@@ -43,7 +43,7 @@ body {
   display: none !important;
 }
 
-/* Top Navigation Bar */
+/* Top Header & Responsive Stacking */
 .topbar {
   position: sticky;
   top: 0;
@@ -114,7 +114,6 @@ body {
   border-color: var(--danger);
 }
 
-/* Responsive Header Stacking on Phones */
 @media (max-width: 640px) {
   .topbar-inner {
     flex-direction: column;
@@ -296,7 +295,6 @@ h1 {
   color: var(--muted);
 }
 
-/* Single Board Toolbar & Responsive Stacking */
 .board-nav-row {
   display: flex;
   align-items: center;
@@ -363,7 +361,7 @@ h1 {
   color: var(--muted);
 }
 
-/* Padlet-Style Masonry Layout (Uncropped Full Media Scaling) */
+/* Padlet-Style Masonry Layout (Uncropped Media Scaling) */
 .posts-grid {
   column-count: 3;
   column-gap: 18px;
@@ -514,7 +512,7 @@ h1 {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  font-size: 16px; /* Prevents iOS auto-zoom on focus */
+  font-size: 16px;
 }
 
 .btn {
@@ -542,14 +540,6 @@ h1 {
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
-}
-
-a.btn.btn-primary {
-    color: #ffffff;
-}
-
-a.btn.btn-primary:hover {
-    color: #ffffff;
 }
 
 .btn-ghost {
@@ -635,7 +625,7 @@ a.btn.btn-primary:hover {
 @media (max-width: 640px) {
   .modal {
     align-items: flex-start;
-    padding: 12px 12px 45vh; /* Extra bottom runway so mobile keyboards never trap inputs or Submit buttons */
+    padding: 12px 12px 45vh;
   }
 
   .modal-card {
@@ -700,7 +690,7 @@ a.btn.btn-primary:hover {
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
-  font-size: 16px; /* Prevents iOS Safari zoom when typing */
+  font-size: 16px;
   font-family: inherit;
 }
 

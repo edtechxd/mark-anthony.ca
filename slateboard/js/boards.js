@@ -2,6 +2,7 @@
 const SlateBoards = (() => {
   const MAX_ACTIVE_BOARDS = 20;
   let currentFilter = "active";
+  let searchQuery = "";
   let cachedCreatorBoards = [];
   let unlockedPasswords = new Map();
   let pendingUnlockBoardId = null;
@@ -37,30 +38,29 @@ const SlateBoards = (() => {
     }
   }
 
-  async function renderDashboard() {
+  function renderBoardCards() {
     const grid = document.getElementById("boardsGrid");
-    grid.innerHTML = `<div class="empty-state"><p>Loading boards...</p></div>`;
+    const q = searchQuery.trim().toLowerCase();
 
-    try {
-      cachedCreatorBoards = await SlateStorage.getCreatorBoards();
-    } catch (err) {
-      console.error(err);
-      grid.innerHTML = `<div class="empty-state"><h3>Database Connection Error</h3><p>${escapeHtml(err.message || "Check your Supabase URL and key in js/storage.js.")}</p></div>`;
-      return;
-    }
-
-    updateQuotaUI(cachedCreatorBoards);
-    const filtered = cachedCreatorBoards.filter(b =>
-      currentFilter === "archived" ? b.archived : !b.archived
-    );
+    const filtered = cachedCreatorBoards.filter(b => {
+      const matchesTab = currentFilter === "archived" ? b.archived : !b.archived;
+      if (!matchesTab) return false;
+      if (!q) return true;
+      return (
+        (b.title || "").toLowerCase().includes(q) ||
+        (b.description || "").toLowerCase().includes(q)
+      );
+    });
 
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div class="empty-state">
-          <h3>No ${currentFilter} boards yet</h3>
-          <p>${currentFilter === "active"
-            ? 'Click <strong>+ New Board</strong> to create your first cloud-synced board.'
-            : 'Archived boards appear here when you need to free up active board slots.'}</p>
+          <h3>${q ? "No matching boards found" : `No ${currentFilter} boards yet`}</h3>
+          <p>${q
+            ? "Try a different search term or clear the search bar."
+            : currentFilter === "active"
+              ? 'Click <strong>+ New Board</strong> to create your first cloud-synced board.'
+              : 'Archived boards appear here when you need to free up active board slots.'}</p>
         </div>
       `;
       return;
@@ -78,19 +78,24 @@ const SlateBoards = (() => {
 
         return `
           <article class="board-card" data-board-id="${escapeHtml(board.id)}">
-            <div>
-              <div class="board-card-top">
+            <div class="board-card-main">
+              <div class="board-thumb" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+              </div>
+              <div class="board-card-info">
+                <h3>${escapeHtml(board.title)}</h3>
+                <p>${escapeHtml(board.description || "No description provided.")}</p>
+              </div>
+            </div>
+            <div class="board-card-footer">
+              <span>${postCount} ${postCount === 1 ? "post" : "posts"} · ${dateStr}</span>
+              <div class="board-badges">
                 <span class="pill ${isPrivate ? "pill-private" : "pill-public"}">
                   ${isPrivate ? "Private" : "Public"}
                 </span>
-                ${board.has_password ? '<span class="pill pill-lock">🔒 Protected</span>' : ""}
+                ${board.has_password ? '<span class="pill pill-lock">Protected</span>' : ""}
               </div>
-              <h3>${escapeHtml(board.title)}</h3>
-              <p>${escapeHtml(board.description || "No description provided.")}</p>
-            </div>
-            <div class="board-card-footer">
-              <span>${postCount} ${postCount === 1 ? "post" : "posts"}</span>
-              <span>${dateStr}</span>
             </div>
           </article>
         `;
@@ -102,6 +107,22 @@ const SlateBoards = (() => {
         openBoard(card.dataset.boardId);
       });
     });
+  }
+
+  async function renderDashboard() {
+    const grid = document.getElementById("boardsGrid");
+    grid.innerHTML = `<div class="empty-state"><p>Loading boards...</p></div>`;
+
+    try {
+      cachedCreatorBoards = await SlateStorage.getCreatorBoards();
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = `<div class="empty-state"><h3>Database Connection Error</h3><p>${escapeHtml(err.message || "Check your Supabase URL and key in js/storage.js.")}</p></div>`;
+      return;
+    }
+
+    updateQuotaUI(cachedCreatorBoards);
+    renderBoardCards();
   }
 
   async function openBoard(boardId, suppliedPassword = "") {
@@ -196,13 +217,20 @@ const SlateBoards = (() => {
     document.getElementById("boardModal").classList.remove("hidden");
   }
 
+  function setSearchQuery(value) {
+    searchQuery = value || "";
+    if (!document.getElementById("dashboardView").classList.contains("hidden")) {
+      renderBoardCards();
+    }
+  }
+
   function init() {
-    document.querySelectorAll(".seg-btn").forEach(btn => {
+    document.querySelectorAll(".seg-btn[data-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".seg-btn[data-filter]").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         currentFilter = btn.dataset.filter;
-        renderDashboard();
+        renderBoardCards();
       });
     });
 
@@ -319,6 +347,7 @@ const SlateBoards = (() => {
     renderDashboard,
     openBoard,
     showDashboard,
-    openEditModal
+    openEditModal,
+    setSearchQuery
   };
 })();

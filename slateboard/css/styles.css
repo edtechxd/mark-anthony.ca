@@ -153,9 +153,10 @@ body {
 }
 
 .container {
-  max-width: 1160px;
+  width: 100%;
+  max-width: 1600px; /* or 100% if you want edge-to-edge */
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 24px 24px 64px;
 }
 
 .view-header {
@@ -363,11 +364,11 @@ h1 {
 
 /* Padlet-Style Masonry Layout (Uncropped Media Scaling) */
 .posts-grid {
-  column-count: 3;
+  column-count: 3; /* change to 4 if you prefer 4 columns on wide screens */
   column-gap: 18px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .posts-grid {
     column-count: 2;
   }

@@ -88,4 +88,180 @@
             </select>
           </label>
 
-          <button class="btn btn-secondary" id="shareBoard
+          <button class="btn btn-secondary" id="shareBoardBtn">Share</button>
+          <button class="btn btn-secondary owner-only" id="boardSettingsBtn">Settings</button>
+          <button class="btn btn-primary" id="newPostBtn">+ Add Post</button>
+        </div>
+      </div>
+
+      <!-- Pinned Section -->
+      <div id="pinnedSection" class="pinned-zone hidden">
+        <div class="zone-label">📌 Pinned Post</div>
+        <div id="pinnedContainer" class="pinned-grid"></div>
+      </div>
+
+      <!-- Main Posts Bento Grid -->
+      <div id="postsGrid" class="posts-grid"></div>
+    </section>
+  </main>
+
+  <!-- Creator Passkey Modal -->
+  <div id="sessionModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Creator Identity</h3>
+        <button class="icon-close" data-close="sessionModal">✕</button>
+      </div>
+      <p class="modal-note">No Google account required. Use a display name and passkey to own and manage your boards on this browser.</p>
+      <form id="sessionForm" class="stack-form">
+        <label>
+          <span>Display Name</span>
+          <input type="text" id="creatorNameInput" placeholder="e.g., Mark Anthony" required />
+        </label>
+        <label>
+          <span>Creator Passkey (min 4 characters)</span>
+          <input type="password" id="creatorPasskeyInput" placeholder="Enter a passkey" minlength="4" required />
+        </label>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="signOutBtn">Sign Out</button>
+          <button type="submit" class="btn btn-primary">Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create / Edit Board Modal -->
+  <div id="boardModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="boardModalTitle">Create New Board</h3>
+        <button class="icon-close" data-close="boardModal">✕</button>
+      </div>
+      <form id="boardForm" class="stack-form">
+        <input type="hidden" id="editBoardId" />
+        <label>
+          <span>Board Title</span>
+          <input type="text" id="boardTitleInput" placeholder="e.g., Typography I — Critique Wall" required />
+        </label>
+        <label>
+          <span>Description</span>
+          <textarea id="boardDescInput" rows="2" placeholder="What should peers post or review here?"></textarea>
+        </label>
+        <div class="form-row">
+          <label>
+            <span>Visibility</span>
+            <select id="boardVisibilityInput">
+              <option value="public">Public (Anyone with link)</option>
+              <option value="private">Private (Restricted)</option>
+            </select>
+          </label>
+          <label>
+            <span>Board View Password (Optional)</span>
+            <input type="text" id="boardPasswordInput" placeholder="Leave blank for no password" />
+          </label>
+        </div>
+        <div class="modal-footer between">
+          <div class="owner-edit-actions hidden" id="boardDangerActions">
+            <button type="button" class="btn btn-secondary" id="toggleArchiveBoardBtn">Archive Board</button>
+            <button type="button" class="btn btn-danger" id="deleteBoardBtn">Delete</button>
+          </div>
+          <div class="modal-footer-right">
+            <button type="button" class="btn btn-ghost" data-close="boardModal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Board</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Post Modal (Owner-Hosted External URLs Only) -->
+  <div id="postModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add Self-Hosted Post</h3>
+        <button class="icon-close" data-close="postModal">✕</button>
+      </div>
+      <form id="postForm" class="stack-form">
+        <label>
+          <span>Post Title</span>
+          <input type="text" id="postTitleInput" placeholder="e.g., Poster Concept v2" required />
+        </label>
+        <label>
+          <span>Media Type</span>
+          <select id="postTypeInput">
+            <option value="note">Text Note</option>
+            <option value="image">Image Link (JPG, PNG, WebP, Drive, Dropbox)</option>
+            <option value="video">Video Link (YouTube, Vimeo, MP4)</option>
+            <option value="pdf">PDF Document Link (Direct PDF or Drive)</option>
+          </select>
+        </label>
+        <label id="postUrlField" class="hidden">
+          <span>External Media URL (Hosted by You)</span>
+          <input type="url" id="postUrlInput" placeholder="https://..." />
+          <small class="field-hint">Paste a public share link from your own host, Google Drive, Dropbox, GitHub, or YouTube/Vimeo.</small>
+        </label>
+        <label>
+          <span>Notes / Caption</span>
+          <textarea id="postBodyInput" rows="3" placeholder="Add context, links, or questions for feedback..."></textarea>
+        </label>
+        <label class="checkbox-row owner-only">
+          <input type="checkbox" id="postPinnedInput" />
+          <span>Pin this post to the top of the board</span>
+        </label>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="postModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Gate Modal -->
+  <div id="passwordGateModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔒 Protected Board</h3>
+      </div>
+      <p class="modal-note">Enter the password provided by the board creator to view <strong id="gateBoardName">this board</strong>.</p>
+      <form id="passwordGateForm" class="stack-form">
+        <input type="password" id="gatePasswordInput" placeholder="Board password" required />
+        <p id="gateErrorText" class="error-text hidden">Incorrect password. Try again.</p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="gateCancelBtn">Back to My Boards</button>
+          <button type="submit" class="btn btn-primary">Unlock Board</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Board Modal -->
+  <div id="shareModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Share Board</h3>
+        <button class="icon-close" data-close="shareModal">✕</button>
+      </div>
+      <p class="modal-note">Share this direct link with peers. If a password is set in Settings, visitors must enter it before viewing.</p>
+      <div class="share-copy-row">
+        <input type="text" id="shareUrlInput" readonly />
+        <button type="button" class="btn btn-primary" id="copyShareUrlBtn">Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF / Media Lightbox -->
+  <div id="lightboxModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-wide">
+      <div class="modal-header">
+        <h3 id="lightboxTitle">Preview</h3>
+        <button class="icon-close" data-close="lightboxModal">✕</button>
+      </div>
+      <div id="lightboxBody" class="lightbox-body"></div>
+    </div>
+  </div>
+
+  <script src="./js/storage.js"></script>
+  <script src="./js/boards.js"></script>
+  <script src="./js/posts.js"></script>
+</body>
+</html>

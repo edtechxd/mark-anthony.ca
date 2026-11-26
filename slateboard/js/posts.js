@@ -1,628 +1,430 @@
-// ==========================================================================
-// SlateBoard Posts, Rich Media (Image/Video/PDF), Sorting, Pinning & Comments
-// ==========================================================================
+// SlateBoard Posts, Owner-Hosted Media Links, Pinned Items, Sorting & Comments
+const SlatePosts = (() => {
+  let activeBoardId = null;
 
-import {
-  state,
-  dbEnv,
-  showToast,
-  escapeHTML,
-  formatTimeAgo,
-  openConfirmModal,
-  savePostRecord,
-  removePostRecord,
-  saveCommentRecord,
-  removeCommentRecord
-} from "./storage.js";
-
-function normalizeExternalUrl(rawUrl) {
-  if (!rawUrl) return "";
-  const trimmed = rawUrl.trim();
-  // Convert Google Drive file/view links into direct preview/download links when possible
-  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (driveMatch) {
-    return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
-  }
-  // Convert Dropbox share URLs into raw/dl=1 links
-  if (trimmed.includes("dropbox.com")) {
-    return trimmed.replace(/([?&])dl=0\b/, "$1raw=1").replace(/([?&])dl=1\b/, "$1raw=1");
-  }
-  return trimmed;
-}
-
-function parseVideoEmbed(url) {
-  const normalized = normalizeExternalUrl(url);
-  if (!normalized) return null;
-  const ytMatch = normalized.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (ytMatch) {
-    return { type: "iframe", src: `https://www.youtube.com/embed/${ytMatch[1]}` };
-  }
-  const vimeoMatch = normalized.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeoMatch) {
-    return { type: "iframe", src: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
-  }
-  if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized) || normalized.includes("raw=1")) {
-    return { type: "video", src: normalized };
-  }
-  return { type: "link", src: normalized };
-}
-  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeoMatch) {
-    return { type: "iframe", src: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
-  }
-  if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) {
-    return { type: "video", src: url };
-  }
-  return { type: "link", src: url };
-}
-
-function buildPostMediaHTML(post) {
-  if (!post.mediaType || post.mediaType === "none" || !post.mediaUrl) return "";
-
-  if (post.mediaType === "image") {
-    return `
-      <div class="relative group rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-obsidian">
-        <img src="${escapeHTML(post.mediaUrl)}" alt="${escapeHTML(post.title)}" onerror="this.src='https://placehold.co/600x360/1e293b/94a3b8?text=Image+Preview'" class="w-full max-h-64 object-cover cursor-pointer group-hover:scale-[1.02] transition-transform duration-300" data-preview-media="${post.id}" />
-        <button data-preview-media="${post.id}" type="button" class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-950/75 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition">
-          Expand
-        </button>
-      </div>
-    `;
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
-  if (post.mediaType === "video") {
-    const embed = parseVideoEmbed(post.mediaUrl);
-    if (embed.type === "iframe") {
-      return `
-        <div class="aspect-video w-full rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-black">
-          <iframe src="${escapeHTML(embed.src)}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-      `;
-    }
-    if (embed.type === "video") {
-      return `
-        <div class="rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-black">
-          <video src="${escapeHTML(embed.src)}" controls class="w-full max-h-60"></video>
-        </div>
-      `;
-    }
-    return `
-      <a href="${escapeHTML(post.mediaUrl)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 hover:bg-indigo-500/10 transition">
-        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">▶</div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 truncate">Watch External Video</p>
-          <p class="text-[11px] text-slate-400 truncate">${escapeHTML(post.mediaUrl)}</p>
-        </div>
-      </a>
-    `;
-  }
+  function normalizeExternalMedia(type, rawUrl) {
+    const url = (rawUrl || "").trim();
+    if (!url) return { kind: "none", url: "" };
 
-  if (post.mediaType === "pdf") {
-    return `
-      <div class="p-3.5 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-rose-600 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
-            PDF
-          </div>
-          <div class="min-w-0">
-            <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(post.mediaName || "Study_Document.pdf")}</p>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">PDF Attachment</p>
-          </div>
-        </div>
-        <button data-preview-media="${post.id}" type="button" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-surfaceDark border border-slate-200 dark:border-slate-700 hover:border-rose-400 transition shrink-0">
-          View
-        </button>
-      </div>
-    `;
-  }
-
-  return "";
-}
-
-function openMediaLightbox(post) {
-  const modal = document.getElementById("mediaPreviewModal");
-  const body = document.getElementById("previewModalBody");
-  document.getElementById("previewModalTitle").textContent = post.title;
-  document.getElementById("previewExternalLink").href = post.mediaUrl;
-
-  if (post.mediaType === "image") {
-    body.innerHTML = `<img src="${escapeHTML(post.mediaUrl)}" alt="${escapeHTML(post.title)}" class="max-w-full max-h-full object-contain rounded-xl" />`;
-  } else if (post.mediaType === "pdf") {
-    body.innerHTML = `<iframe src="${escapeHTML(post.mediaUrl)}" class="w-full h-full rounded-xl border-0"></iframe>`;
-  }
-  modal.classList.remove("hidden");
-}
-
-export function renderBoardCanvas() {
-  const board = state.boards.find((b) => b.id === state.currentBoardId);
-  if (!board) return;
-
-  const isCreator = state.user && board.creatorId === state.user.uid;
-  const hasPwd = Boolean(board.password && board.password.trim());
-
-  document.getElementById("activeBoardTitle").textContent = board.title;
-  document.getElementById("activeBoardDesc").textContent =
-    board.description || "Collaborative study space for notes, videos, images, and PDFs.";
-  document.getElementById("activeBoardCreator").textContent = board.creatorName || "Creator";
-
-  const visBadge = document.getElementById("boardVisibilityBadge");
-  visBadge.textContent = board.visibility === "public" ? "Public Board" : "Private Board";
-  visBadge.className =
-    board.visibility === "public"
-      ? "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-      : "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/15 text-slate-700 dark:text-slate-300 border border-slate-500/20";
-
-  document.getElementById("boardPasswordBadge").classList.toggle("hidden", !hasPwd);
-  document.getElementById("boardArchivedBadge").classList.toggle("hidden", !board.archived);
-  document.getElementById("boardSettingsBtn").classList.toggle("hidden", !isCreator);
-
-  let boardPosts = state.posts.filter((p) => p.boardId === board.id);
-  document.getElementById("activeBoardPostCount").textContent = `${boardPosts.length} ${
-    boardPosts.length === 1 ? "post" : "posts"
-  }`;
-
-  if (state.mediaFilter !== "all") {
-    boardPosts = boardPosts.filter((p) => p.mediaType === state.mediaFilter);
-  }
-
-  // Pinned posts stay anchored at the top, followed by chosen sort order
-  boardPosts.sort((a, b) => {
-    if (Boolean(a.pinned) !== Boolean(b.pinned)) {
-      return a.pinned ? -1 : 1;
-    }
-    if (state.sortOrder === "alpha") {
-      return (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" });
-    }
-    if (state.sortOrder === "oldest") {
-      return (a.createdAt || 0) - (b.createdAt || 0);
-    }
-    return (b.createdAt || 0) - (a.createdAt || 0);
-  });
-
-  const grid = document.getElementById("postsGrid");
-  const emptyState = document.getElementById("postsEmptyState");
-  grid.innerHTML = "";
-
-  if (boardPosts.length === 0) {
-    emptyState.classList.remove("hidden");
-    return;
-  }
-  emptyState.classList.add("hidden");
-
-  boardPosts.forEach((post) => {
-    const postComments = state.comments
-      .filter((c) => c.postId === post.id)
-      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-
-    const canManagePost = isCreator || (state.user && post.authorId === state.user.uid);
-    const mediaHtml = buildPostMediaHTML(post);
-
-    const card = document.createElement("article");
-    card.className = `bento-card rounded-3xl bg-white dark:bg-surfaceDark border ${
-      post.pinned
-        ? "border-indigo-500/60 dark:border-indigo-400/50 ring-2 ring-indigo-500/10"
-        : "border-slate-200/90 dark:border-slate-800"
-    } shadow-bento overflow-hidden flex flex-col`;
-
-    card.innerHTML = `
-      ${
-        post.pinned
-          ? `
-        <div class="px-4 py-1.5 bg-gradient-to-r from-indigo-600/10 via-violet-600/10 to-transparent border-b border-indigo-500/15 flex items-center justify-between">
-          <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 3H8v2h1v5.586L6.293 13.293A1 1 0 0 0 7 15h4v6l1 1 1-1v-6h4a1 1 0 0 0 .707-1.707L15 10.586V5h1V3z"/></svg>
-            PINNED RESOURCE
-          </span>
-        </div>
-      `
-          : ""
+    // Google Drive file share link -> direct image or preview embed
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    if (driveMatch) {
+      const fileId = driveMatch[1];
+      if (type === "image") {
+        return { kind: "image", url: `https://drive.google.com/uc?export=view&id=${fileId}` };
       }
+      return { kind: "iframe", url: `https://drive.google.com/file/d/${fileId}/preview` };
+    }
 
-      <div class="p-5 space-y-3.5 flex-1">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <img src="${escapeHTML(
-              post.authorAvatar || "https://api.dicebear.com/9.x/notionists/svg?seed=" + post.authorName
-            )}" alt="" class="w-7 h-7 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 shrink-0" />
-            <div class="min-w-0">
-              <p class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHTML(
-                post.authorName || "Student"
-              )}</p>
-              <p class="text-[10px] text-slate-400">${formatTimeAgo(post.createdAt)}</p>
+    // Dropbox share link -> raw media
+    if (url.includes("dropbox.com")) {
+      const direct = url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace(/[?&]dl=0/, "");
+      if (type === "image") return { kind: "image", url: direct };
+      if (type === "pdf") return { kind: "pdf", url: direct };
+    }
+
+    if (type === "video") {
+      // YouTube
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{6,})/);
+      if (ytMatch) {
+        return { kind: "iframe", url: `https://www.youtube.com/embed/${ytMatch[1]}` };
+      }
+      // Vimeo
+      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+      if (vimeoMatch) {
+        return { kind: "iframe", url: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+      }
+      return { kind: "video", url };
+    }
+
+    if (type === "image") {
+      return { kind: "image", url };
+    }
+
+    if (type === "pdf") {
+      return { kind: "pdf", url };
+    }
+
+    return { kind: "none", url };
+  }
+
+  function renderMediaBlock(post) {
+    if (post.type === "note" || !post.url) return "";
+    const media = normalizeExternalMedia(post.type, post.url);
+
+    if (media.kind === "image") {
+      return `
+        <div class="post-media">
+          <img src="${escapeHtml(media.url)}" alt="${escapeHtml(post.title)}" loading="lazy" data-lightbox-type="image" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}" />
+        </div>
+      `;
+    }
+
+    if (media.kind === "iframe") {
+      return `
+        <div class="post-media">
+          <iframe src="${escapeHtml(media.url)}" title="${escapeHtml(post.title)}" allowfullscreen loading="lazy"></iframe>
+        </div>
+      `;
+    }
+
+    if (media.kind === "video") {
+      return `
+        <div class="post-media">
+          <video src="${escapeHtml(media.url)}" controls preload="metadata"></video>
+        </div>
+      `;
+    }
+
+    if (media.kind === "pdf") {
+      return `
+        <div class="post-media">
+          <div class="pdf-card-preview">
+            <div class="pdf-badge">📄 PDF Document</div>
+            <div style="display:flex;gap:6px;">
+              <button class="mini-btn" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Preview</button>
+              <a class="mini-btn" href="${escapeHtml(post.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
             </div>
           </div>
+        </div>
+      `;
+    }
 
-          <div class="flex items-center gap-1 shrink-0">
-            ${
-              canManagePost
-                ? `
-              <button data-pin-post="${post.id}" type="button" title="${
-                    post.pinned ? "Unpin Post" : "Pin Post to Top"
-                  }" class="p-1.5 rounded-xl text-xs transition ${
-                    post.pinned
-                      ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
-                      : "text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  }">
-                <svg class="w-4 h-4" fill="${
-                  post.pinned ? "currentColor" : "none"
-                }" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 3H8v2h1v5.586L6.293 13.293A1 1 0 0 0 7 15h4v6l1 1 1-1v-6h4a1 1 0 0 0 .707-1.707L15 10.586V5h1V3z"/></svg>
-              </button>
-              <button data-delete-post="${
-                post.id
-              }" type="button" title="Delete Post" class="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-500/10 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-              </button>
-            `
-                : ""
-            }
+    return "";
+  }
+
+  function sortPosts(posts, mode) {
+    const copy = [...posts];
+    if (mode === "alpha") {
+      return copy.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" }));
+    }
+    if (mode === "oldest") {
+      return copy.sort((a, b) => a.createdAt - b.createdAt);
+    }
+    return copy.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  function renderPostCard(post, isOwner) {
+    const dateStr = new Date(post.createdAt).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric"
+    });
+    const comments = post.comments || [];
+
+    return `
+      <article class="post-card" data-post-id="${escapeHtml(post.id)}">
+        ${renderMediaBlock(post)}
+        <div class="post-body">
+          <div class="post-header-row">
+            <h3 class="post-title">${escapeHtml(post.title)}</h3>
+            ${isOwner ? `
+              <div class="post-actions">
+                <button class="mini-btn pin-toggle-btn" title="Pin or Unpin">${post.pinned ? "Unpin" : "📌 Pin"}</button>
+                <button class="mini-btn delete-post-btn" title="Delete Post">✕</button>
+              </div>
+            ` : ""}
+          </div>
+          ${post.body ? `<p class="post-text">${escapeHtml(post.body)}</p>` : ""}
+          <div class="post-meta">
+            <span>By ${escapeHtml(post.authorName || "Peer")}</span>
+            <span>${dateStr}</span>
           </div>
         </div>
 
-        <div class="space-y-1.5">
-          <h3 class="font-display font-bold text-base text-slate-900 dark:text-white leading-snug">${escapeHTML(
-            post.title
-          )}</h3>
-          ${
-            post.body
-              ? `<p class="text-xs sm:text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">${escapeHTML(
-                  post.body
-                )}</p>`
-              : ""
-          }
+        <div class="comments-box">
+          <div class="comments-list">
+            ${comments.map(c => `
+              <div class="comment-item">
+                <span class="comment-author">${escapeHtml(c.authorName)}:</span>
+                <span>${escapeHtml(c.text)}</span>
+              </div>
+            `).join("")}
+          </div>
+          <form class="comment-form">
+            <input type="text" placeholder="Add a comment..." required />
+            <button type="submit" class="mini-btn">Post</button>
+          </form>
         </div>
-
-        ${mediaHtml}
-      </div>
-
-      <div class="px-5 py-3.5 bg-slate-50/80 dark:bg-obsidian/60 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-            Peer Discussion (${postComments.length})
-          </span>
-        </div>
-
-        <div class="space-y-2 max-h-44 overflow-y-auto pr-1">
-          ${
-            postComments.length === 0
-              ? `<p class="text-[11px] text-slate-400 italic">No comments yet. Start the discussion!</p>`
-              : postComments
-                  .map((c) => {
-                    const canDeleteComment = isCreator || (state.user && c.authorId === state.user.uid);
-                    return `
-                      <div class="p-2.5 rounded-2xl bg-white dark:bg-surfaceDark border border-slate-200/70 dark:border-slate-800 text-xs space-y-1">
-                        <div class="flex items-center justify-between gap-2">
-                          <span class="font-semibold text-[11px] text-slate-800 dark:text-slate-200">${escapeHTML(
-                            c.authorName
-                          )}</span>
-                          <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] text-slate-400">${formatTimeAgo(c.createdAt)}</span>
-                            ${
-                              canDeleteComment
-                                ? `<button data-delete-comment="${c.id}" type="button" class="text-[10px] text-slate-400 hover:text-rose-500">✕</button>`
-                                : ""
-                            }
-                          </div>
-                        </div>
-                        <p class="text-slate-600 dark:text-slate-300 leading-snug">${escapeHTML(c.text)}</p>
-                      </div>
-                    `;
-                  })
-                  .join("")
-          }
-        </div>
-
-        <form data-comment-form="${post.id}" class="flex items-center gap-2 pt-1">
-          <input type="text" required maxlength="300" placeholder="${
-            state.user ? "Add a peer comment..." : "Sign in to comment..."
-          }" ${
-      !state.user ? "disabled" : ""
-    } class="flex-1 px-3 py-2 rounded-xl text-xs bg-white dark:bg-surfaceDark border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 disabled:opacity-60" />
-          <button type="submit" ${
-            !state.user ? "disabled" : ""
-          } class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 dark:bg-indigo-600 text-white hover:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 transition">
-            Post
-          </button>
-        </form>
-      </div>
+      </article>
     `;
-    grid.appendChild(card);
-  });
-
-  grid.querySelectorAll("[data-pin-post]").forEach((btn) => {
-    btn.addEventListener("click", () => togglePinPost(btn.getAttribute("data-pin-post")));
-  });
-
-  grid.querySelectorAll("[data-delete-post]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const postId = btn.getAttribute("data-delete-post");
-      openConfirmModal(
-        "Delete Post?",
-        "Remove this post and its comments from the board?",
-        () => deletePost(postId)
-      );
-    });
-  });
-
-  grid.querySelectorAll("[data-preview-media]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const postId = btn.getAttribute("data-preview-media");
-      const post = state.posts.find((p) => p.id === postId);
-      if (post) openMediaLightbox(post);
-    });
-  });
-
-  grid.querySelectorAll("[data-comment-form]").forEach((form) => {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const postId = form.getAttribute("data-comment-form");
-      const input = form.querySelector("input");
-      addComment(postId, input.value.trim());
-      input.value = "";
-    });
-  });
-
-  grid.querySelectorAll("[data-delete-comment]").forEach((btn) => {
-    btn.addEventListener("click", () => deleteComment(btn.getAttribute("data-delete-comment")));
-  });
-}
-
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    if (file.size > 780 * 1024) {
-      reject(
-        new Error(
-          "File exceeds 750KB limit for direct browser storage. Please use an external URL for larger files."
-        )
-      );
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function handleCreatePost(e) {
-  e.preventDefault();
-  if (!state.user || !state.currentBoardId) return;
-
-  const title = document.getElementById("postTitleInput").value.trim();
-  const body = document.getElementById("postBodyInput").value.trim();
-  const mediaType = state.selectedMediaType;
-  const pinned = document.getElementById("postPinCheckbox").checked;
-
-  let mediaUrl = "";
-  let mediaName = "";
-
-  if (mediaType === "image") {
-    const rawUrl = document.getElementById("postImageUrl").value.trim();
-    if (rawUrl) {
-      mediaUrl = normalizeExternalUrl(rawUrl);
-      mediaName = rawUrl.split("/").pop()?.split("?")[0] || "External Image";
-    }
-  } else if (mediaType === "video") {
-    const rawUrl = document.getElementById("postVideoUrl").value.trim();
-    if (rawUrl) {
-      mediaUrl = normalizeExternalUrl(rawUrl);
-      mediaName = "External Video Link";
-    }
-  } else if (mediaType === "pdf") {
-    const rawUrl = document.getElementById("postPdfUrl").value.trim();
-    if (rawUrl) {
-      mediaUrl = normalizeExternalUrl(rawUrl);
-      mediaName = rawUrl.split("/").pop()?.split("?")[0] || "External_Document.pdf";
-    }
   }
 
-  const postId = "post-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-  const newPost = {
-    id: postId,
-    boardId: state.currentBoardId,
-    title,
-    body,
-    mediaType: mediaUrl ? mediaType : "none",
-    mediaUrl,
-    mediaName,
-    pinned,
-    authorId: state.user.uid,
-    authorName: state.user.displayName,
-    authorAvatar: state.user.avatar,
-    createdAt: Date.now()
-  };
+  function renderBoard(board) {
+    activeBoardId = board.id;
+    const session = SlateStorage.getSession();
+    const isOwner = board.ownerId === session.creatorId;
 
-  await savePostRecord(newPost, true);
-  renderBoardCanvas();
+    document.getElementById("currentBoardTitle").textContent = board.title;
+    document.getElementById("currentBoardDesc").textContent = board.description || "";
 
-  document.getElementById("createPostForm").reset();
-  setSelectedMediaType("none");
-  document.getElementById("createPostModal").classList.add("hidden");
-  showToast("Post published with external link!", "success");
-}
+    const privacyBadge = document.getElementById("boardPrivacyBadge");
+    privacyBadge.textContent = board.visibility === "private" ? "Private" : "Public";
+    privacyBadge.className = `pill ${board.visibility === "private" ? "pill-private" : "pill-public"}`;
 
-async function togglePinPost(postId) {
-  const post = state.posts.find((p) => p.id === postId);
-  if (!post) return;
-  const nextPin = !post.pinned;
-  post.pinned = nextPin;
-  await savePostRecord({ id: post.id, pinned: nextPin }, false);
-  renderBoardCanvas();
-  showToast(nextPin ? "Post pinned to top" : "Post unpinned", "info");
-}
+    const passBadge = document.getElementById("boardPasswordBadge");
+    if (board.password) {
+      passBadge.classList.remove("hidden");
+    } else {
+      passBadge.classList.add("hidden");
+    }
 
-async function deletePost(postId) {
-  await removePostRecord(postId);
-  renderBoardCanvas();
-  showToast("Post removed", "info");
-}
+    document.querySelectorAll(".owner-only").forEach(el => {
+      el.classList.toggle("hidden", !isOwner);
+    });
 
-async function addComment(postId, text) {
-  if (!text || !state.user || !state.currentBoardId) return;
-  const commentId = "comm-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-  const newComment = {
-    id: commentId,
-    postId,
-    boardId: state.currentBoardId,
-    text,
-    authorId: state.user.uid,
-    authorName: state.user.displayName,
-    authorAvatar: state.user.avatar,
-    createdAt: Date.now()
-  };
+    const sortMode = document.getElementById("sortSelect").value;
+    const allPosts = board.posts || [];
+    const pinnedPosts = sortPosts(allPosts.filter(p => p.pinned), sortMode);
+    const regularPosts = sortPosts(allPosts.filter(p => !p.pinned), sortMode);
 
-  await saveCommentRecord(newComment);
-  renderBoardCanvas();
-}
+    const pinnedSection = document.getElementById("pinnedSection");
+    const pinnedContainer = document.getElementById("pinnedContainer");
+    if (pinnedPosts.length > 0) {
+      pinnedSection.classList.remove("hidden");
+      pinnedContainer.innerHTML = pinnedPosts.map(p => renderPostCard(p, isOwner)).join("");
+    } else {
+      pinnedSection.classList.add("hidden");
+      pinnedContainer.innerHTML = "";
+    }
 
-async function deleteComment(commentId) {
-  await removeCommentRecord(commentId);
-  renderBoardCanvas();
-}
-    } else if (mediaType === "video") {
-      mediaUrl = document.getElementById("postVideoUrl").value.trim();
-      mediaName = "Video Link";
-    } else if (mediaType === "pdf") {
-      const urlVal = document.getElementById("postPdfUrl").value.trim();
-      const fileInput = document.getElementById("postPdfFile");
-      if (fileInput.files && fileInput.files[0]) {
-        mediaUrl = await readFileAsDataURL(fileInput.files[0]);
-        mediaName = fileInput.files[0].name;
-      } else if (urlVal) {
-        mediaUrl = urlVal;
-        mediaName = urlVal.split("/").pop() || "Document.pdf";
+    const postsGrid = document.getElementById("postsGrid");
+    if (regularPosts.length === 0 && pinnedPosts.length === 0) {
+      postsGrid.innerHTML = `
+        <div class="empty-state">
+          <h3>This board has no posts yet</h3>
+          <p>Click <strong>+ Add Post</strong> to share a note, image link, video link, or self-hosted PDF.</p>
+        </div>
+      `;
+    } else {
+      postsGrid.innerHTML = regularPosts.map(p => renderPostCard(p, isOwner)).join("");
+    }
+
+    bindPostEvents();
+  }
+
+  function bindPostEvents() {
+    document.querySelectorAll(".post-card").forEach(card => {
+      const postId = card.dataset.postId;
+
+      const pinBtn = card.querySelector(".pin-toggle-btn");
+      if (pinBtn) {
+        pinBtn.addEventListener("click", () => {
+          const boards = SlateStorage.getAllBoards();
+          const board = boards.find(b => b.id === activeBoardId);
+          const post = board && board.posts.find(p => p.id === postId);
+          if (post) {
+            post.pinned = !post.pinned;
+            SlateStorage.saveAllBoards(boards);
+            renderBoard(board);
+          }
+        });
       }
-    }
-  } catch (err) {
-    showToast(err.message, "warning");
-    return;
-  }
 
-  const postId = "post-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-  const newPost = {
-    id: postId,
-    boardId: state.currentBoardId,
-    title,
-    body,
-    mediaType: mediaUrl ? mediaType : "none",
-    mediaUrl,
-    mediaName,
-    pinned,
-    authorId: state.user.uid,
-    authorName: state.user.displayName,
-    authorAvatar: state.user.photoURL,
-    createdAt: Date.now()
-  };
+      const delBtn = card.querySelector(".delete-post-btn");
+      if (delBtn) {
+        delBtn.addEventListener("click", () => {
+          if (!confirm("Remove this post?")) return;
+          const boards = SlateStorage.getAllBoards();
+          const board = boards.find(b => b.id === activeBoardId);
+          if (board) {
+            board.posts = board.posts.filter(p => p.id !== postId);
+            SlateStorage.saveAllBoards(boards);
+            renderBoard(board);
+          }
+        });
+      }
 
-  await savePostRecord(newPost, true);
-  if (!dbEnv.useCloudFirestore) {
-    renderBoardCanvas();
-  }
+      const commentForm = card.querySelector(".comment-form");
+      commentForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const input = commentForm.querySelector("input");
+        const text = input.value.trim();
+        if (!text) return;
 
-  document.getElementById("createPostForm").reset();
-  setSelectedMediaType("none");
-  document.getElementById("createPostModal").classList.add("hidden");
-  showToast("Post published to board!", "success");
-}
-
-async function togglePinPost(postId) {
-  const post = state.posts.find((p) => p.id === postId);
-  if (!post) return;
-  const nextPin = !post.pinned;
-
-  if (dbEnv.useCloudFirestore && dbEnv.db) {
-    await savePostRecord({ pinned: nextPin }, false);
-  } else {
-    post.pinned = nextPin;
-    renderBoardCanvas();
-  }
-  showToast(nextPin ? "Post pinned to top" : "Post unpinned", "info");
-}
-
-async function deletePost(postId) {
-  await removePostRecord(postId);
-  if (!dbEnv.useCloudFirestore) {
-    renderBoardCanvas();
-  }
-  showToast("Post removed", "info");
-}
-
-async function addComment(postId, text) {
-  if (!text || !state.user || !state.currentBoardId) return;
-  const commentId = "comm-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
-  const newComment = {
-    id: commentId,
-    postId,
-    boardId: state.currentBoardId,
-    text,
-    authorId: state.user.uid,
-    authorName: state.user.displayName,
-    authorAvatar: state.user.photoURL,
-    createdAt: Date.now()
-  };
-
-  await saveCommentRecord(newComment);
-  if (!dbEnv.useCloudFirestore) {
-    renderBoardCanvas();
-  }
-}
-
-async function deleteComment(commentId) {
-  await removeCommentRecord(commentId);
-  if (!dbEnv.useCloudFirestore) {
-    renderBoardCanvas();
-  }
-}
-
-function setSelectedMediaType(type) {
-  state.selectedMediaType = type;
-  document.querySelectorAll(".media-type-btn").forEach((btn) => {
-    const active = btn.getAttribute("data-media") === type;
-    btn.className = active
-      ? "media-type-btn active py-2 px-2 rounded-xl text-xs font-semibold border border-indigo-500 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-      : "media-type-btn py-2 px-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:border-indigo-400";
-  });
-  document.getElementById("imageInputGroup").classList.toggle("hidden", type !== "image");
-  document.getElementById("videoInputGroup").classList.toggle("hidden", type !== "video");
-  document.getElementById("pdfInputGroup").classList.toggle("hidden", type !== "pdf");
-}
-
-export function initPostEvents() {
-  document.querySelectorAll(".sort-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.sortOrder = btn.getAttribute("data-sort");
-      document.querySelectorAll(".sort-btn").forEach((b) => {
-        const isAct = b === btn;
-        b.className = isAct
-          ? "sort-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition"
-          : "sort-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition";
+        const session = SlateStorage.getSession();
+        const boards = SlateStorage.getAllBoards();
+        const board = boards.find(b => b.id === activeBoardId);
+        const post = board && board.posts.find(p => p.id === postId);
+        if (post) {
+          post.comments = post.comments || [];
+          post.comments.push({
+            id: "c_" + Date.now().toString(36),
+            authorName: session.displayName,
+            text,
+            createdAt: Date.now()
+          });
+          SlateStorage.saveAllBoards(boards);
+          renderBoard(board);
+        }
       });
-      renderBoardCanvas();
+
+      card.querySelectorAll("[data-lightbox-url]").forEach(trigger => {
+        trigger.addEventListener("click", () => {
+          const lbType = trigger.dataset.lightboxType;
+          const lbUrl = trigger.dataset.lightboxUrl;
+          const lbTitle = trigger.dataset.lightboxTitle;
+          document.getElementById("lightboxTitle").textContent = lbTitle || "Preview";
+          const body = document.getElementById("lightboxBody");
+          body.innerHTML = lbType === "pdf"
+            ? `<iframe src="${escapeHtml(lbUrl)}"></iframe>`
+            : `<img src="${escapeHtml(lbUrl)}" alt="${escapeHtml(lbTitle)}" />`;
+          document.getElementById("lightboxModal").classList.remove("hidden");
+        });
+      });
+    });
+  }
+
+  function init() {
+    document.getElementById("sortSelect").addEventListener("change", () => {
+      const board = SlateStorage.getAllBoards().find(b => b.id === activeBoardId);
+      if (board) renderBoard(board);
+    });
+
+    document.getElementById("boardSettingsBtn").addEventListener("click", () => {
+      const board = SlateStorage.getAllBoards().find(b => b.id === activeBoardId);
+      if (board) SlateBoards.openEditModal(board);
+    });
+
+    document.getElementById("shareBoardBtn").addEventListener("click", () => {
+      const shareUrl = `${window.location.origin}${window.location.pathname}?board=${encodeURIComponent(activeBoardId)}`;
+      document.getElementById("shareUrlInput").value = shareUrl;
+      document.getElementById("shareModal").classList.remove("hidden");
+    });
+
+    document.getElementById("copyShareUrlBtn").addEventListener("click", async () => {
+      const input = document.getElementById("shareUrlInput");
+      input.select();
+      try {
+        await navigator.clipboard.writeText(input.value);
+        document.getElementById("copyShareUrlBtn").textContent = "Copied!";
+        setTimeout(() => {
+          document.getElementById("copyShareUrlBtn").textContent = "Copy Link";
+        }, 1600);
+      } catch (_) {}
+    });
+
+    document.getElementById("newPostBtn").addEventListener("click", () => {
+      document.getElementById("postTitleInput").value = "";
+      document.getElementById("postTypeInput").value = "note";
+      document.getElementById("postUrlInput").value = "";
+      document.getElementById("postUrlField").classList.add("hidden");
+      document.getElementById("postBodyInput").value = "";
+      document.getElementById("postPinnedInput").checked = false;
+      document.getElementById("postModal").classList.remove("hidden");
+    });
+
+    document.getElementById("postTypeInput").addEventListener("change", e => {
+      const needsUrl = e.target.value !== "note";
+      const urlField = document.getElementById("postUrlField");
+      const urlInput = document.getElementById("postUrlInput");
+      urlField.classList.toggle("hidden", !needsUrl);
+      urlInput.required = needsUrl;
+    });
+
+    document.getElementById("postForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const session = SlateStorage.getSession();
+      const boards = SlateStorage.getAllBoards();
+      const board = boards.find(b => b.id === activeBoardId);
+      if (!board) return;
+
+      const isOwner = board.ownerId === session.creatorId;
+      const type = document.getElementById("postTypeInput").value;
+      const newPost = {
+        id: "post_" + Date.now().toString(36),
+        title: document.getElementById("postTitleInput").value.trim(),
+        type,
+        url: type === "note" ? "" : document.getElementById("postUrlInput").value.trim(),
+        body: document.getElementById("postBodyInput").value.trim(),
+        authorName: session.displayName,
+        authorId: session.creatorId,
+        pinned: isOwner ? document.getElementById("postPinnedInput").checked : false,
+        createdAt: Date.now(),
+        comments: []
+      };
+
+      board.posts = board.posts || [];
+      board.posts.push(newPost);
+      SlateStorage.saveAllBoards(boards);
+      document.getElementById("postModal").classList.add("hidden");
+      renderBoard(board);
+    });
+  }
+
+  return {
+    init,
+    renderBoard
+  };
+})();
+
+// App Bootstrap
+document.addEventListener("DOMContentLoaded", () => {
+  // Theme init
+  const savedTheme = SlateStorage.getTheme();
+  SlateStorage.setTheme(savedTheme);
+  document.getElementById("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
+
+  document.getElementById("themeToggleBtn").addEventListener("click", () => {
+    const next = SlateStorage.getTheme() === "dark" ? "light" : "dark";
+    SlateStorage.setTheme(next);
+    document.getElementById("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
+  });
+
+  // Creator Session UI
+  function syncSessionUI() {
+    const session = SlateStorage.getSession();
+    document.getElementById("openSessionBtn").textContent = session.displayName;
+  }
+  syncSessionUI();
+
+  document.getElementById("openSessionBtn").addEventListener("click", () => {
+    const session = SlateStorage.getSession();
+    document.getElementById("creatorNameInput").value = session.displayName === "Guest Creator" ? "" : session.displayName;
+    document.getElementById("creatorPasskeyInput").value = "";
+    document.getElementById("sessionModal").classList.remove("hidden");
+  });
+
+  document.getElementById("sessionForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("creatorNameInput").value;
+    const passkey = document.getElementById("creatorPasskeyInput").value;
+    SlateStorage.setSession(name, passkey);
+    syncSessionUI();
+    document.getElementById("sessionModal").classList.add("hidden");
+    SlateBoards.showDashboard();
+  });
+
+  document.getElementById("signOutBtn").addEventListener("click", () => {
+    SlateStorage.clearSession();
+    syncSessionUI();
+    document.getElementById("sessionModal").classList.add("hidden");
+    SlateBoards.showDashboard();
+  });
+
+  // Generic modal close buttons
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById(btn.dataset.close).classList.add("hidden");
     });
   });
 
-  document.getElementById("mediaTypeFilter").addEventListener("change", (e) => {
-    state.mediaFilter = e.target.value;
-    renderBoardCanvas();
-  });
+  SlateBoards.init();
+  SlatePosts.init();
 
-  function openNewPostModal() {
-    if (!state.user) {
-      showToast("Start a Creator Passkey session first to add posts.", "info");
-      document.getElementById("creatorPasskeyModal").classList.remove("hidden");
-      return;
-    }
-    const board = state.boards.find((b) => b.id === state.currentBoardId);
-    const isCreator = board && board.creatorId === state.user.uid;
-    document.getElementById("pinOnCreateWrapper").classList.toggle("hidden", !isCreator);
-    document.getElementById("createPostModal").classList.remove("hidden");
+  // Route to shared board if ?board= is present
+  const params = new URLSearchParams(window.location.search);
+  const sharedBoardId = params.get("board");
+  if (sharedBoardId) {
+    SlateBoards.openBoard(sharedBoardId);
+  } else {
+    SlateBoards.renderDashboard();
   }
-
-  document.getElementById("openNewPostBtn").addEventListener("click", openNewPostModal);
-  document.getElementById("emptyAddPostBtn").addEventListener("click", openNewPostModal);
-
-  document.querySelectorAll(".media-type-btn").forEach((btn) => {
-    btn.addEventListener("click", () => setSelectedMediaType(btn.getAttribute("data-media")));
-  });
-
-  document.getElementById("createPostForm").addEventListener("submit", handleCreatePost);
-}
+});

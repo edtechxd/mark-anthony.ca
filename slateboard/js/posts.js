@@ -20,6 +20,9 @@ const SlatePosts = (() => {
       if (type === "image") {
         return { kind: "image", url: `https://drive.google.com/uc?export=view&id=${fileId}` };
       }
+      if (type === "pdf") {
+        return { kind: "pdf", url: `https://drive.google.com/file/d/${fileId}/preview` };
+      }
       return { kind: "iframe", url: `https://drive.google.com/file/d/${fileId}/preview` };
     }
 
@@ -77,10 +80,11 @@ const SlatePosts = (() => {
     if (media.kind === "pdf") {
       return `
         <div class="post-media">
+          <iframe class="pdf-frame" src="${escapeHtml(media.url)}" title="${escapeHtml(post.title)}" loading="lazy"></iframe>
           <div class="pdf-card-preview">
             <div class="pdf-badge">📄 PDF Document</div>
             <div style="display:flex;gap:6px;">
-              <button class="mini-btn" type="button" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Preview</button>
+              <button class="mini-btn" type="button" data-lightbox-type="pdf" data-lightbox-url="${escapeHtml(media.url)}" data-lightbox-title="${escapeHtml(post.title)}">Expand</button>
               <a class="mini-btn" href="${escapeHtml(media.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
             </div>
           </div>

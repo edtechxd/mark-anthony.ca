@@ -342,4 +342,8 @@ const SlateBoards = (() => {
   return {
     init,
     renderDashboard,
-    open
+    openBoard,
+    showDashboard,
+    openEditModal
+  };
+})();

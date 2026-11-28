@@ -473,6 +473,15 @@ h1 {
   font-size: 0.88rem;
 }
 
+.link-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
 .link-meta {
   min-width: 0;
   display: flex;

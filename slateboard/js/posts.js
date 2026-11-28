@@ -1,4 +1,4 @@
-// SlateBoard Posts, Owner-Hosted Media Links, 3-Column Masonry, Sorting & Cloud Comments
+// SlateBoard Posts, Web Links, Owner-Hosted Media Links, 3-Column Masonry, Sorting & Cloud Comments
 const SlatePosts = (() => {
   let currentBoard = null;
 
@@ -8,6 +8,26 @@ const SlatePosts = (() => {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  function normalizeWebLink(rawUrl) {
+    const trimmed = (rawUrl || "").trim();
+    if (!trimmed) return { valid: false, href: "", label: "" };
+    const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    try {
+      const parsed = new URL(withProtocol);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        return { valid: false, href: "", label: "" };
+      }
+      const cleanPath = parsed.pathname === "/" ? "" : parsed.pathname;
+      return {
+        valid: true,
+        href: parsed.toString(),
+        label: parsed.hostname.replace(/^www\./i, "") + cleanPath
+      };
+    } catch (_) {
+      return { valid: false, href: "", label: "" };
+    }
   }
 
   function normalizeExternalMedia(type, rawUrl) {
@@ -57,6 +77,23 @@ const SlatePosts = (() => {
 
   function renderMediaBlock(post) {
     if (post.type === "note" || !post.url) return "";
+
+    if (post.type === "link") {
+      const webLink = normalizeWebLink(post.url);
+      if (!webLink.valid) return "";
+      return `
+        <div class="post-media">
+          <div class="link-card-preview">
+            <div class="link-meta">
+              <span class="link-badge">🔗 Web Link</span>
+              <span class="link-domain">${escapeHtml(webLink.label)}</span>
+            </div>
+            <a class="mini-btn" href="${escapeHtml(webLink.href)}" target="_blank" rel="noopener noreferrer">Visit ↗</a>
+          </div>
+        </div>
+      `;
+    }
+
     const media = normalizeExternalMedia(post.type, post.url);
 
     if (media.kind === "image") {
@@ -182,7 +219,8 @@ const SlatePosts = (() => {
       const mediaWeight =
         post.type === "image" ? 4.2 :
         post.type === "pdf" ? 3.8 :
-        post.type === "video" ? 2.6 : 1.4;
+        post.type === "video" ? 2.6 :
+        post.type === "link" ? 1.8 : 1.4;
       const commentWeight = ((post.comments && post.comments.length) || 0) * 0.25;
       colHeights[targetIdx] += mediaWeight + commentWeight;
     });
@@ -234,7 +272,7 @@ const SlatePosts = (() => {
       postsGrid.innerHTML = `
         <div class="empty-state">
           <h3>This board has no posts yet</h3>
-          <p>Click <strong>+ Add Post</strong> to share a note, image link, video link, or self-hosted PDF.</p>
+          <p>Click <strong>+ Add Post</strong> to share a note, web link, image link, video link, or PDF.</p>
         </div>
       `;
     } else {
@@ -348,12 +386,18 @@ const SlatePosts = (() => {
       if (!currentBoard) return;
       const session = SlateStorage.getSession();
       const type = document.getElementById("postTypeInput").value;
+      let rawUrl = type === "note" ? "" : document.getElementById("postUrlInput").value.trim();
+
+      if (type === "link" && rawUrl) {
+        const normalized = normalizeWebLink(rawUrl);
+        if (normalized.valid) rawUrl = normalized.href;
+      }
 
       await SlateStorage.addPost(currentBoard.id, {
         id: "post_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
         title: document.getElementById("postTitleInput").value.trim(),
         type,
-        url: type === "note" ? "" : document.getElementById("postUrlInput").value.trim(),
+        url: rawUrl,
         body: document.getElementById("postBodyInput").value.trim(),
         authorName: session.displayName,
         authorId: session.creatorId,
@@ -384,58 +428,4 @@ document.addEventListener("DOMContentLoaded", () => {
   SlateStorage.setTheme(savedTheme);
   document.getElementById("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
 
-  document.getElementById("themeToggleBtn").addEventListener("click", () => {
-    const next = SlateStorage.getTheme() === "dark" ? "light" : "dark";
-    SlateStorage.setTheme(next);
-    document.getElementById("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
-  });
-
-  function syncSessionUI() {
-    const session = SlateStorage.getSession();
-    document.getElementById("openSessionBtn").textContent = session.displayName;
-  }
-  syncSessionUI();
-
-  document.getElementById("openSessionBtn").addEventListener("click", () => {
-    const session = SlateStorage.getSession();
-    document.getElementById("creatorNameInput").value = session.displayName.startsWith("Guest Creator")
-      ? ""
-      : session.displayName;
-    document.getElementById("creatorPasskeyInput").value = "";
-    document.getElementById("sessionModal").classList.remove("hidden");
-  });
-
-  document.getElementById("sessionForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const name = document.getElementById("creatorNameInput").value;
-    const passkey = document.getElementById("creatorPasskeyInput").value;
-    SlateStorage.setSession(name, passkey);
-    syncSessionUI();
-    document.getElementById("sessionModal").classList.add("hidden");
-    SlateBoards.showDashboard();
-  });
-
-  document.getElementById("signOutBtn").addEventListener("click", () => {
-    SlateStorage.clearSession();
-    syncSessionUI();
-    document.getElementById("sessionModal").classList.add("hidden");
-    SlateBoards.showDashboard();
-  });
-
-  document.querySelectorAll("[data-close]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.getElementById(btn.dataset.close).classList.add("hidden");
-    });
-  });
-
-  SlateBoards.init();
-  SlatePosts.init();
-
-  const params = new URLSearchParams(window.location.search);
-  const sharedBoardId = params.get("board");
-  if (sharedBoardId) {
-    SlateBoards.openBoard(sharedBoardId);
-  } else {
-    SlateBoards.renderDashboard();
-  }
-});
+  document.getElementById("themeToggle

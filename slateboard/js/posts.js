@@ -2,6 +2,10 @@
 const SlatePosts = (() => {
   let currentBoard = null;
 
+  function $(id) {
+    return document.getElementById(id);
+  }
+
   function escapeHtml(str) {
     return String(str || "")
       .replace(/&/g, "&amp;")
@@ -236,48 +240,57 @@ const SlatePosts = (() => {
     const session = SlateStorage.getSession();
     const isOwner = board.ownerId === session.creatorId;
 
-    document.getElementById("currentBoardTitle").textContent = board.title;
-    document.getElementById("currentBoardDesc").textContent = board.description || "";
+    if ($("currentBoardTitle")) $("currentBoardTitle").textContent = board.title;
+    if ($("currentBoardDesc")) $("currentBoardDesc").textContent = board.description || "";
 
-    const privacyBadge = document.getElementById("boardPrivacyBadge");
-    privacyBadge.textContent = board.visibility === "private" ? "Private" : "Public";
-    privacyBadge.className = `pill ${board.visibility === "private" ? "pill-private" : "pill-public"}`;
+    const privacyBadge = $("boardPrivacyBadge");
+    if (privacyBadge) {
+      privacyBadge.textContent = board.visibility === "private" ? "Private" : "Public";
+      privacyBadge.className = `pill ${board.visibility === "private" ? "pill-private" : "pill-public"}`;
+    }
 
-    const passBadge = document.getElementById("boardPasswordBadge");
-    passBadge.classList.toggle("hidden", !board.hasPassword);
+    const passBadge = $("boardPasswordBadge");
+    if (passBadge) {
+      passBadge.classList.toggle("hidden", !board.hasPassword);
+    }
 
     document.querySelectorAll(".owner-only").forEach(el => {
       el.classList.toggle("hidden", !isOwner);
     });
 
-    const sortMode = document.getElementById("sortSelect").value;
+    const sortSelect = $("sortSelect");
+    const sortMode = sortSelect ? sortSelect.value : "newest";
     const allPosts = board.posts || [];
     const pinnedPosts = sortPosts(allPosts.filter(p => p.pinned), sortMode);
     const regularPosts = sortPosts(allPosts.filter(p => !p.pinned), sortMode);
 
-    const pinnedSection = document.getElementById("pinnedSection");
-    const pinnedContainer = document.getElementById("pinnedContainer");
-    if (pinnedPosts.length > 0) {
-      pinnedSection.classList.remove("hidden");
-      renderMasonryColumns(pinnedContainer, pinnedPosts, isOwner);
-      bindPostEventsIn(pinnedContainer);
-    } else {
-      pinnedSection.classList.add("hidden");
-      pinnedContainer.innerHTML = "";
+    const pinnedSection = $("pinnedSection");
+    const pinnedContainer = $("pinnedContainer");
+    if (pinnedSection && pinnedContainer) {
+      if (pinnedPosts.length > 0) {
+        pinnedSection.classList.remove("hidden");
+        renderMasonryColumns(pinnedContainer, pinnedPosts, isOwner);
+        bindPostEventsIn(pinnedContainer);
+      } else {
+        pinnedSection.classList.add("hidden");
+        pinnedContainer.innerHTML = "";
+      }
     }
 
-    const postsGrid = document.getElementById("postsGrid");
-    if (regularPosts.length === 0 && pinnedPosts.length === 0) {
-      postsGrid.classList.remove("masonry-cols");
-      postsGrid.innerHTML = `
-        <div class="empty-state">
-          <h3>This board has no posts yet</h3>
-          <p>Click <strong>+ Add Post</strong> to share a note, web link, image link, video link, or PDF.</p>
-        </div>
-      `;
-    } else {
-      renderMasonryColumns(postsGrid, regularPosts, isOwner);
-      bindPostEventsIn(postsGrid);
+    const postsGrid = $("postsGrid");
+    if (postsGrid) {
+      if (regularPosts.length === 0 && pinnedPosts.length === 0) {
+        postsGrid.classList.remove("masonry-cols");
+        postsGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>This board has no posts yet</h3>
+            <p>Click <strong>+ Add Post</strong> to share a note, web link, image link, video link, or PDF.</p>
+          </div>
+        `;
+      } else {
+        renderMasonryColumns(postsGrid, regularPosts, isOwner);
+        bindPostEventsIn(postsGrid);
+      }
     }
   }
 
@@ -303,114 +316,135 @@ const SlatePosts = (() => {
       }
 
       const commentForm = card.querySelector(".comment-form");
-      commentForm.addEventListener("submit", async e => {
-        e.preventDefault();
-        const input = commentForm.querySelector("input");
-        const text = input.value.trim();
-        if (!text) return;
+      if (commentForm) {
+        commentForm.addEventListener("submit", async e => {
+          e.preventDefault();
+          const input = commentForm.querySelector("input");
+          const text = input ? input.value.trim() : "";
+          if (!text) return;
 
-        const session = SlateStorage.getSession();
-        await SlateStorage.addComment(postId, {
-          id: "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-          authorName: session.displayName,
-          text,
-          createdAt: Date.now()
+          const session = SlateStorage.getSession();
+          await SlateStorage.addComment(postId, {
+            id: "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+            authorName: session.displayName,
+            text,
+            createdAt: Date.now()
+          });
+          await SlateBoards.openBoard(currentBoard.id);
         });
-        await SlateBoards.openBoard(currentBoard.id);
-      });
+      }
 
       card.querySelectorAll("[data-lightbox-url]").forEach(trigger => {
         trigger.addEventListener("click", () => {
           const lbType = trigger.dataset.lightboxType;
           const lbUrl = trigger.dataset.lightboxUrl;
           const lbTitle = trigger.dataset.lightboxTitle;
-          document.getElementById("lightboxTitle").textContent = lbTitle || "Preview";
-          const body = document.getElementById("lightboxBody");
-          body.innerHTML =
-            lbType === "pdf"
-              ? `<iframe src="${escapeHtml(lbUrl)}"></iframe>`
-              : `<img src="${escapeHtml(lbUrl)}" alt="${escapeHtml(lbTitle)}" />`;
-          document.getElementById("lightboxModal").classList.remove("hidden");
+          if ($("lightboxTitle")) $("lightboxTitle").textContent = lbTitle || "Preview";
+          const body = $("lightboxBody");
+          if (body) {
+            body.innerHTML =
+              lbType === "pdf"
+                ? `<iframe src="${escapeHtml(lbUrl)}"></iframe>`
+                : `<img src="${escapeHtml(lbUrl)}" alt="${escapeHtml(lbTitle)}" />`;
+          }
+          if ($("lightboxModal")) $("lightboxModal").classList.remove("hidden");
         });
       });
     });
   }
 
   function init() {
-    document.getElementById("sortSelect").addEventListener("change", () => {
-      if (currentBoard) renderBoard(currentBoard);
-    });
-
-    document.getElementById("boardSettingsBtn").addEventListener("click", () => {
-      if (currentBoard) SlateBoards.openEditModal(currentBoard);
-    });
-
-    document.getElementById("shareBoardBtn").addEventListener("click", () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}?board=${encodeURIComponent(currentBoard.id)}`;
-      document.getElementById("shareUrlInput").value = shareUrl;
-      document.getElementById("shareModal").classList.remove("hidden");
-    });
-
-    document.getElementById("copyShareUrlBtn").addEventListener("click", async () => {
-      const input = document.getElementById("shareUrlInput");
-      input.select();
-      try {
-        await navigator.clipboard.writeText(input.value);
-        document.getElementById("copyShareUrlBtn").textContent = "Copied!";
-        setTimeout(() => {
-          document.getElementById("copyShareUrlBtn").textContent = "Copy Link";
-        }, 1600);
-      } catch (_) {}
-    });
-
-    document.getElementById("newPostBtn").addEventListener("click", () => {
-      document.getElementById("postTitleInput").value = "";
-      document.getElementById("postTypeInput").value = "note";
-      document.getElementById("postUrlInput").value = "";
-      document.getElementById("postUrlField").classList.add("hidden");
-      document.getElementById("postBodyInput").value = "";
-      document.getElementById("postPinnedInput").checked = false;
-      document.getElementById("postModal").classList.remove("hidden");
-    });
-
-    document.getElementById("postTypeInput").addEventListener("change", e => {
-      const needsUrl = e.target.value !== "note";
-      const urlField = document.getElementById("postUrlField");
-      const urlInput = document.getElementById("postUrlInput");
-      urlField.classList.toggle("hidden", !needsUrl);
-      urlInput.required = needsUrl;
-    });
-
-    document.getElementById("postForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      if (!currentBoard) return;
-      const session = SlateStorage.getSession();
-      const type = document.getElementById("postTypeInput").value;
-      let rawUrl = type === "note" ? "" : document.getElementById("postUrlInput").value.trim();
-
-      if (type === "link" && rawUrl) {
-        const normalized = normalizeWebLink(rawUrl);
-        if (normalized.valid) rawUrl = normalized.href;
-      }
-
-      await SlateStorage.addPost(currentBoard.id, {
-        id: "post_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-        title: document.getElementById("postTitleInput").value.trim(),
-        type,
-        url: rawUrl,
-        body: document.getElementById("postBodyInput").value.trim(),
-        authorName: session.displayName,
-        authorId: session.creatorId,
-        pinned: document.getElementById("postPinnedInput").checked,
-        createdAt: Date.now()
+    if ($("sortSelect")) {
+      $("sortSelect").addEventListener("change", () => {
+        if (currentBoard) renderBoard(currentBoard);
       });
+    }
 
-      document.getElementById("postModal").classList.add("hidden");
-      await SlateBoards.openBoard(currentBoard.id);
-    });
+    if ($("boardSettingsBtn")) {
+      $("boardSettingsBtn").addEventListener("click", () => {
+        if (currentBoard) SlateBoards.openEditModal(currentBoard);
+      });
+    }
+
+    if ($("shareBoardBtn")) {
+      $("shareBoardBtn").addEventListener("click", () => {
+        if (!currentBoard) return;
+        const shareUrl = `${window.location.origin}${window.location.pathname}?board=${encodeURIComponent(currentBoard.id)}`;
+        if ($("shareUrlInput")) $("shareUrlInput").value = shareUrl;
+        if ($("shareModal")) $("shareModal").classList.remove("hidden");
+      });
+    }
+
+    if ($("copyShareUrlBtn")) {
+      $("copyShareUrlBtn").addEventListener("click", async () => {
+        const input = $("shareUrlInput");
+        if (!input) return;
+        input.select();
+        try {
+          await navigator.clipboard.writeText(input.value);
+          $("copyShareUrlBtn").textContent = "Copied!";
+          setTimeout(() => {
+            if ($("copyShareUrlBtn")) $("copyShareUrlBtn").textContent = "Copy Link";
+          }, 1600);
+        } catch (_) {}
+      });
+    }
+
+    if ($("newPostBtn")) {
+      $("newPostBtn").addEventListener("click", () => {
+        if ($("postTitleInput")) $("postTitleInput").value = "";
+        if ($("postTypeInput")) $("postTypeInput").value = "note";
+        if ($("postUrlInput")) $("postUrlInput").value = "";
+        if ($("postUrlField")) $("postUrlField").classList.add("hidden");
+        if ($("postBodyInput")) $("postBodyInput").value = "";
+        if ($("postPinnedInput")) $("postPinnedInput").checked = false;
+        if ($("postModal")) $("postModal").classList.remove("hidden");
+      });
+    }
+
+    if ($("postTypeInput")) {
+      $("postTypeInput").addEventListener("change", e => {
+        const needsUrl = e.target.value !== "note";
+        const urlField = $("postUrlField");
+        const urlInput = $("postUrlInput");
+        if (urlField) urlField.classList.toggle("hidden", !needsUrl);
+        if (urlInput) urlInput.required = needsUrl;
+      });
+    }
+
+    if ($("postForm")) {
+      $("postForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        if (!currentBoard) return;
+        const session = SlateStorage.getSession();
+        const type = $("postTypeInput") ? $("postTypeInput").value : "note";
+        let rawUrl = type === "note" || !$("postUrlInput") ? "" : $("postUrlInput").value.trim();
+
+        if (type === "link" && rawUrl) {
+          const normalized = normalizeWebLink(rawUrl);
+          if (normalized.valid) rawUrl = normalized.href;
+        }
+
+        await SlateStorage.addPost(currentBoard.id, {
+          id: "post_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          title: $("postTitleInput") ? $("postTitleInput").value.trim() : "",
+          type,
+          url: rawUrl,
+          body: $("postBodyInput") ? $("postBodyInput").value.trim() : "",
+          authorName: session.displayName,
+          authorId: session.creatorId,
+          pinned: $("postPinnedInput") ? $("postPinnedInput").checked : false,
+          createdAt: Date.now()
+        });
+
+        if ($("postModal")) $("postModal").classList.add("hidden");
+        await SlateBoards.openBoard(currentBoard.id);
+      });
+    }
 
     window.addEventListener("resize", () => {
-      if (currentBoard && !document.getElementById("boardView").classList.contains("hidden")) {
+      const boardView = $("boardView");
+      if (currentBoard && boardView && !boardView.classList.contains("hidden")) {
         renderBoard(currentBoard);
       }
     });
@@ -424,8 +458,75 @@ const SlatePosts = (() => {
 
 // App Bootstrap
 document.addEventListener("DOMContentLoaded", () => {
+  const $ = id => document.getElementById(id);
+
   const savedTheme = SlateStorage.getTheme();
   SlateStorage.setTheme(savedTheme);
-  document.getElementById("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
+  if ($("themeIcon")) $("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
 
-  document.getElementById("themeToggle
+  if ($("themeToggleBtn")) {
+    $("themeToggleBtn").addEventListener("click", () => {
+      const next = SlateStorage.getTheme() === "dark" ? "light" : "dark";
+      SlateStorage.setTheme(next);
+      if ($("themeIcon")) $("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
+    });
+  }
+
+  function syncSessionUI() {
+    const session = SlateStorage.getSession();
+    if ($("openSessionBtn")) $("openSessionBtn").textContent = session.displayName;
+  }
+  syncSessionUI();
+
+  if ($("openSessionBtn")) {
+    $("openSessionBtn").addEventListener("click", () => {
+      const session = SlateStorage.getSession();
+      if ($("creatorNameInput")) {
+        $("creatorNameInput").value = session.displayName.startsWith("Guest Creator")
+          ? ""
+          : session.displayName;
+      }
+      if ($("creatorPasskeyInput")) $("creatorPasskeyInput").value = "";
+      if ($("sessionModal")) $("sessionModal").classList.remove("hidden");
+    });
+  }
+
+  if ($("sessionForm")) {
+    $("sessionForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = $("creatorNameInput") ? $("creatorNameInput").value : "";
+      const passkey = $("creatorPasskeyInput") ? $("creatorPasskeyInput").value : "";
+      SlateStorage.setSession(name, passkey);
+      syncSessionUI();
+      if ($("sessionModal")) $("sessionModal").classList.add("hidden");
+      SlateBoards.showDashboard();
+    });
+  }
+
+  if ($("signOutBtn")) {
+    $("signOutBtn").addEventListener("click", () => {
+      SlateStorage.clearSession();
+      syncSessionUI();
+      if ($("sessionModal")) $("sessionModal").classList.add("hidden");
+      SlateBoards.showDashboard();
+    });
+  }
+
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = $(btn.dataset.close);
+      if (target) target.classList.add("hidden");
+    });
+  });
+
+  SlateBoards.init();
+  SlatePosts.init();
+
+  const params = new URLSearchParams(window.location.search);
+  const sharedBoardId = params.get("board");
+  if (sharedBoardId) {
+    SlateBoards.openBoard(sharedBoardId);
+  } else {
+    SlateBoards.renderDashboard();
+  }
+});

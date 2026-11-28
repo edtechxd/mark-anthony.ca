@@ -6,6 +6,10 @@ const SlateBoards = (() => {
   let unlockedPasswords = new Map();
   let pendingUnlockBoardId = null;
 
+  function $(id) {
+    return document.getElementById(id);
+  }
+
   function escapeHtml(str) {
     return String(str || "")
       .replace(/&/g, "&amp;")
@@ -18,27 +22,28 @@ const SlateBoards = (() => {
     const activeCount = myBoards.filter(b => !b.archived).length;
     const archivedCount = myBoards.filter(b => b.archived).length;
 
-    document.getElementById("activeCount").textContent = activeCount;
-    document.getElementById("archivedCount").textContent = archivedCount;
-    document.getElementById("quotaText").textContent = `${activeCount} / ${MAX_ACTIVE_BOARDS} Active Boards`;
+    if ($("activeCount")) $("activeCount").textContent = activeCount;
+    if ($("archivedCount")) $("archivedCount").textContent = archivedCount;
+    if ($("quotaText")) $("quotaText").textContent = `${activeCount} / ${MAX_ACTIVE_BOARDS} Active Boards`;
 
-    const quotaPill = document.getElementById("quotaPill");
-    const quotaBanner = document.getElementById("quotaBanner");
-    const newBoardBtn = document.getElementById("newBoardBtn");
+    const quotaPill = $("quotaPill");
+    const quotaBanner = $("quotaBanner");
+    const newBoardBtn = $("newBoardBtn");
 
     if (activeCount >= MAX_ACTIVE_BOARDS) {
-      quotaPill.classList.add("full");
-      quotaBanner.classList.remove("hidden");
-      newBoardBtn.disabled = true;
+      if (quotaPill) quotaPill.classList.add("full");
+      if (quotaBanner) quotaBanner.classList.remove("hidden");
+      if (newBoardBtn) newBoardBtn.disabled = true;
     } else {
-      quotaPill.classList.remove("full");
-      quotaBanner.classList.add("hidden");
-      newBoardBtn.disabled = false;
+      if (quotaPill) quotaPill.classList.remove("full");
+      if (quotaBanner) quotaBanner.classList.add("hidden");
+      if (newBoardBtn) newBoardBtn.disabled = false;
     }
   }
 
   async function renderDashboard() {
-    const grid = document.getElementById("boardsGrid");
+    const grid = $("boardsGrid");
+    if (!grid) return;
     grid.innerHTML = `<div class="empty-state"><p>Loading boards...</p></div>`;
 
     try {
@@ -129,10 +134,12 @@ const SlateBoards = (() => {
 
     if (result.error === "password_required" || result.error === "invalid_password") {
       pendingUnlockBoardId = boardId;
-      document.getElementById("gateBoardName").textContent = result.title || "this board";
-      document.getElementById("gatePasswordInput").value = "";
-      document.getElementById("gateErrorText").classList.toggle("hidden", result.error !== "invalid_password");
-      document.getElementById("passwordGateModal").classList.remove("hidden");
+      if ($("gateBoardName")) $("gateBoardName").textContent = result.title || "this board";
+      if ($("gatePasswordInput")) $("gatePasswordInput").value = "";
+      if ($("gateErrorText")) {
+        $("gateErrorText").classList.toggle("hidden", result.error !== "invalid_password");
+      }
+      if ($("passwordGateModal")) $("passwordGateModal").classList.remove("hidden");
       return;
     }
 
@@ -144,8 +151,8 @@ const SlateBoards = (() => {
     url.searchParams.set("board", result.id);
     window.history.replaceState({}, "", url);
 
-    document.getElementById("dashboardView").classList.add("hidden");
-    document.getElementById("boardView").classList.remove("hidden");
+    if ($("dashboardView")) $("dashboardView").classList.add("hidden");
+    if ($("boardView")) $("boardView").classList.remove("hidden");
 
     SlatePosts.renderBoard(result);
   }
@@ -155,8 +162,8 @@ const SlateBoards = (() => {
     url.searchParams.delete("board");
     window.history.replaceState({}, "", url);
 
-    document.getElementById("boardView").classList.add("hidden");
-    document.getElementById("dashboardView").classList.remove("hidden");
+    if ($("boardView")) $("boardView").classList.add("hidden");
+    if ($("dashboardView")) $("dashboardView").classList.remove("hidden");
     renderDashboard();
   }
 
@@ -167,33 +174,39 @@ const SlateBoards = (() => {
       return;
     }
 
-    document.getElementById("boardModalTitle").textContent = "Create New Board";
-    document.getElementById("editBoardId").value = "";
-    document.getElementById("boardTitleInput").value = "";
-    document.getElementById("boardDescInput").value = "";
-    document.getElementById("boardVisibilityInput").value = "public";
-    document.getElementById("boardPasswordInput").value = "";
-    document.getElementById("boardPasswordInput").placeholder = "Leave blank for no password";
-    document.getElementById("boardDangerActions").classList.add("hidden");
-    document.getElementById("boardModal").classList.remove("hidden");
+    if ($("boardModalTitle")) $("boardModalTitle").textContent = "Create New Board";
+    if ($("editBoardId")) $("editBoardId").value = "";
+    if ($("boardTitleInput")) $("boardTitleInput").value = "";
+    if ($("boardDescInput")) $("boardDescInput").value = "";
+    if ($("boardVisibilityInput")) $("boardVisibilityInput").value = "public";
+    if ($("boardPasswordInput")) {
+      $("boardPasswordInput").value = "";
+      $("boardPasswordInput").placeholder = "Leave blank for no password";
+    }
+    if ($("boardDangerActions")) $("boardDangerActions").classList.add("hidden");
+    if ($("boardModal")) $("boardModal").classList.remove("hidden");
   }
 
   function openEditModal(board) {
-    document.getElementById("boardModalTitle").textContent = "Board Settings";
-    document.getElementById("editBoardId").value = board.id;
-    document.getElementById("boardTitleInput").value = board.title;
-    document.getElementById("boardDescInput").value = board.description || "";
-    document.getElementById("boardVisibilityInput").value = board.visibility || "public";
-    document.getElementById("boardPasswordInput").value = "";
-    document.getElementById("boardPasswordInput").placeholder = board.hasPassword
-      ? "Enter new password (or leave blank to remove)"
-      : "Leave blank for no password";
+    if ($("boardModalTitle")) $("boardModalTitle").textContent = "Board Settings";
+    if ($("editBoardId")) $("editBoardId").value = board.id;
+    if ($("boardTitleInput")) $("boardTitleInput").value = board.title;
+    if ($("boardDescInput")) $("boardDescInput").value = board.description || "";
+    if ($("boardVisibilityInput")) $("boardVisibilityInput").value = board.visibility || "public";
+    if ($("boardPasswordInput")) {
+      $("boardPasswordInput").value = "";
+      $("boardPasswordInput").placeholder = board.hasPassword
+        ? "Enter new password (or leave blank to remove)"
+        : "Leave blank for no password";
+    }
 
-    const archiveBtn = document.getElementById("toggleArchiveBoardBtn");
-    archiveBtn.textContent = board.archived ? "Unarchive Board" : "Archive Board";
-    archiveBtn.dataset.archived = board.archived ? "1" : "0";
-    document.getElementById("boardDangerActions").classList.remove("hidden");
-    document.getElementById("boardModal").classList.remove("hidden");
+    const archiveBtn = $("toggleArchiveBoardBtn");
+    if (archiveBtn) {
+      archiveBtn.textContent = board.archived ? "Unarchive Board" : "Archive Board";
+      archiveBtn.dataset.archived = board.archived ? "1" : "0";
+    }
+    if ($("boardDangerActions")) $("boardDangerActions").classList.remove("hidden");
+    if ($("boardModal")) $("boardModal").classList.remove("hidden");
   }
 
   function init() {
@@ -206,119 +219,127 @@ const SlateBoards = (() => {
       });
     });
 
-    document.getElementById("newBoardBtn").addEventListener("click", openCreateModal);
-    document.getElementById("backToDashboardBtn").addEventListener("click", showDashboard);
-    document.getElementById("brandHomeBtn").addEventListener("click", showDashboard);
+    if ($("newBoardBtn")) $("newBoardBtn").addEventListener("click", openCreateModal);
+    if ($("backToDashboardBtn")) $("backToDashboardBtn").addEventListener("click", showDashboard);
+    if ($("brandHomeBtn")) $("brandHomeBtn").addEventListener("click", showDashboard);
 
-    document.getElementById("boardForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const saveBtn = document.getElementById("saveBoardBtn");
-      const session = SlateStorage.getSession();
-      const editId = document.getElementById("editBoardId").value;
-      const title = document.getElementById("boardTitleInput").value.trim();
-      const description = document.getElementById("boardDescInput").value.trim();
-      const visibility = document.getElementById("boardVisibilityInput").value;
-      const password = document.getElementById("boardPasswordInput").value.trim();
-      if (!title) return;
+    if ($("boardForm")) {
+      $("boardForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const saveBtn = $("saveBoardBtn");
+        const session = SlateStorage.getSession();
+        const editId = $("editBoardId") ? $("editBoardId").value : "";
+        const title = $("boardTitleInput") ? $("boardTitleInput").value.trim() : "";
+        const description = $("boardDescInput") ? $("boardDescInput").value.trim() : "";
+        const visibility = $("boardVisibilityInput") ? $("boardVisibilityInput").value : "public";
+        const password = $("boardPasswordInput") ? $("boardPasswordInput").value.trim() : "";
+        if (!title) return;
 
-      const boardId = editId || ("board_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
-      const isArchived = editId ? document.getElementById("toggleArchiveBoardBtn").dataset.archived === "1" : false;
+        const boardId = editId || ("board_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
+        const archiveBtn = $("toggleArchiveBoardBtn");
+        const isArchived = editId && archiveBtn ? archiveBtn.dataset.archived === "1" : false;
 
-      if (saveBtn) saveBtn.disabled = true;
-      try {
-        const res = await SlateStorage.saveBoard({
-          id: boardId,
-          title,
-          description,
-          ownerId: session.creatorId,
-          ownerName: session.displayName,
-          visibility,
-          password,
-          archived: isArchived,
-          createdAt: Date.now()
-        });
+        if (saveBtn) saveBtn.disabled = true;
+        try {
+          const res = await SlateStorage.saveBoard({
+            id: boardId,
+            title,
+            description,
+            ownerId: session.creatorId,
+            ownerName: session.displayName,
+            visibility,
+            password,
+            archived: isArchived,
+            createdAt: Date.now()
+          });
 
-        if (res && res.error === "limit_reached") {
-          alert(`You have reached the ${MAX_ACTIVE_BOARDS} active board limit.`);
-          return;
+          if (res && res.error === "limit_reached") {
+            alert(`You have reached the ${MAX_ACTIVE_BOARDS} active board limit.`);
+            return;
+          }
+
+          if (res && res.error === "unauthorized") {
+            alert("Only the board owner can update this board.");
+            return;
+          }
+
+          if ($("boardModal")) $("boardModal").classList.add("hidden");
+          await openBoard(boardId);
+        } catch (err) {
+          console.error(err);
+          alert(`Failed to save board: ${err.message || err}`);
+        } finally {
+          if (saveBtn) saveBtn.disabled = false;
         }
+      });
+    }
 
-        if (res && res.error === "unauthorized") {
-          alert("Only the board owner can update this board.");
-          return;
+    if ($("toggleArchiveBoardBtn")) {
+      $("toggleArchiveBoardBtn").addEventListener("click", async () => {
+        const editId = $("editBoardId") ? $("editBoardId").value : "";
+        const session = SlateStorage.getSession();
+        const archiveBtn = $("toggleArchiveBoardBtn");
+        const currentlyArchived = archiveBtn ? archiveBtn.dataset.archived === "1" : false;
+
+        try {
+          const res = await SlateStorage.saveBoard({
+            id: editId,
+            title: $("boardTitleInput") ? $("boardTitleInput").value.trim() : "",
+            description: $("boardDescInput") ? $("boardDescInput").value.trim() : "",
+            ownerId: session.creatorId,
+            ownerName: session.displayName,
+            visibility: $("boardVisibilityInput") ? $("boardVisibilityInput").value : "public",
+            password: "__KEEP__",
+            archived: !currentlyArchived
+          });
+
+          if (res && res.error === "limit_reached") {
+            alert(`You already have ${MAX_ACTIVE_BOARDS} active boards. Archive or delete another board first.`);
+            return;
+          }
+
+          if ($("boardModal")) $("boardModal").classList.add("hidden");
+          showDashboard();
+        } catch (err) {
+          console.error(err);
+          alert(`Could not update archive status: ${err.message || err}`);
         }
+      });
+    }
 
-        document.getElementById("boardModal").classList.add("hidden");
-        await openBoard(boardId);
-      } catch (err) {
-        console.error(err);
-        alert(`Failed to save board: ${err.message || err}`);
-      } finally {
-        if (saveBtn) saveBtn.disabled = false;
-      }
-    });
-
-    document.getElementById("toggleArchiveBoardBtn").addEventListener("click", async () => {
-      const editId = document.getElementById("editBoardId").value;
-      const session = SlateStorage.getSession();
-      const currentlyArchived = document.getElementById("toggleArchiveBoardBtn").dataset.archived === "1";
-
-      try {
-        const res = await SlateStorage.saveBoard({
-          id: editId,
-          title: document.getElementById("boardTitleInput").value.trim(),
-          description: document.getElementById("boardDescInput").value.trim(),
-          ownerId: session.creatorId,
-          ownerName: session.displayName,
-          visibility: document.getElementById("boardVisibilityInput").value,
-          password: "__KEEP__",
-          archived: !currentlyArchived
-        });
-
-        if (res && res.error === "limit_reached") {
-          alert(`You already have ${MAX_ACTIVE_BOARDS} active boards. Archive or delete another board first.`);
-          return;
+    if ($("deleteBoardBtn")) {
+      $("deleteBoardBtn").addEventListener("click", async () => {
+        const editId = $("editBoardId") ? $("editBoardId").value : "";
+        if (!editId || !confirm("Delete this board and all its posts permanently?")) return;
+        try {
+          await SlateStorage.deleteBoard(editId);
+          if ($("boardModal")) $("boardModal").classList.add("hidden");
+          showDashboard();
+        } catch (err) {
+          console.error(err);
+          alert(`Could not delete board: ${err.message || err}`);
         }
+      });
+    }
 
-        document.getElementById("boardModal").classList.add("hidden");
+    if ($("passwordGateForm")) {
+      $("passwordGateForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const input = $("gatePasswordInput") ? $("gatePasswordInput").value : "";
+        if ($("passwordGateModal")) $("passwordGateModal").classList.add("hidden");
+        await openBoard(pendingUnlockBoardId, input);
+      });
+    }
+
+    if ($("gateCancelBtn")) {
+      $("gateCancelBtn").addEventListener("click", () => {
+        if ($("passwordGateModal")) $("passwordGateModal").classList.add("hidden");
         showDashboard();
-      } catch (err) {
-        console.error(err);
-        alert(`Could not update archive status: ${err.message || err}`);
-      }
-    });
-
-    document.getElementById("deleteBoardBtn").addEventListener("click", async () => {
-      const editId = document.getElementById("editBoardId").value;
-      if (!confirm("Delete this board and all its posts permanently?")) return;
-      try {
-        await SlateStorage.deleteBoard(editId);
-        document.getElementById("boardModal").classList.add("hidden");
-        showDashboard();
-      } catch (err) {
-        console.error(err);
-        alert(`Could not delete board: ${err.message || err}`);
-      }
-    });
-
-    document.getElementById("passwordGateForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const input = document.getElementById("gatePasswordInput").value;
-      document.getElementById("passwordGateModal").classList.add("hidden");
-      await openBoard(pendingUnlockBoardId, input);
-    });
-
-    document.getElementById("gateCancelBtn").addEventListener("click", () => {
-      document.getElementById("passwordGateModal").classList.add("hidden");
-      showDashboard();
-    });
+      });
+    }
   }
 
   return {
     init,
     renderDashboard,
-    openBoard,
-    showDashboard,
-    openEditModal
-  };
-})();
+    open

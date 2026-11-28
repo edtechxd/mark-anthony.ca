@@ -1,6 +1,7 @@
-// SlateBoard Posts, Web Links, Owner-Hosted Media Links, 3-Column Masonry, Sorting & Cloud Comments
+// SlateBoard Posts, Web Links, Free OG Thumbnails, Owner-Hosted Media Links, 3-Column Masonry, Sorting & Cloud Comments
 const SlatePosts = (() => {
   let currentBoard = null;
+  const linkPreviewCache = new Map();
 
   function $(id) {
     return document.getElementById(id);
@@ -32,6 +33,68 @@ const SlatePosts = (() => {
     } catch (_) {
       return { valid: false, href: "", label: "" };
     }
+  }
+
+  function getCachedLinkPreview(href) {
+    if (linkPreviewCache.has(href)) return linkPreviewCache.get(href);
+    try {
+      const saved = sessionStorage.getItem("slate_og_" + href);
+      if (saved !== null) {
+        linkPreviewCache.set(href, saved);
+        return saved;
+      }
+    } catch (_) {}
+    return undefined;
+  }
+
+  function setCachedLinkPreview(href, imgUrl) {
+    linkPreviewCache.set(href, imgUrl || "");
+    try {
+      sessionStorage.setItem("slate_og_" + href, imgUrl || "");
+    } catch (_) {}
+  }
+
+  async function fetchFreeOgImage(href) {
+    try {
+      const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(href)}`;
+      const res = await fetch(endpoint);
+      if (!res.ok) return "";
+      const json = await res.json();
+      const data = json && json.data ? json.data : {};
+      const ogImg =
+        (data.image && data.image.url) ||
+        (data.logo && data.logo.url) ||
+        "";
+      return /^https?:\/\//i.test(ogImg) ? ogImg : "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function hydrateLinkPreviews(root = document) {
+    const targets = [...root.querySelectorAll("[data-og-url]")];
+    if (targets.length === 0) return;
+
+    await Promise.all(
+      targets.map(async el => {
+        const href = el.dataset.ogUrl;
+        const cached = getCachedLinkPreview(href);
+        if (cached !== undefined) {
+          if (cached) {
+            el.src = cached;
+            el.classList.remove("hidden");
+          }
+          return;
+        }
+
+        const imgUrl = await fetchFreeOgImage(href);
+        setCachedLinkPreview(href, imgUrl);
+        if (imgUrl && el.isConnected) {
+          el.src = imgUrl;
+          el.classList.remove("hidden");
+        }
+      })
+    );
   }
 
   function normalizeExternalMedia(type, rawUrl) {
@@ -85,8 +148,20 @@ const SlatePosts = (() => {
     if (post.type === "link") {
       const webLink = normalizeWebLink(post.url);
       if (!webLink.valid) return "";
+      const cachedImg = getCachedLinkPreview(webLink.href);
+      const thumbSrc = cachedImg ? escapeHtml(cachedImg) : "";
+      const thumbHiddenClass = cachedImg ? "" : " hidden";
+
       return `
         <div class="post-media">
+          <img
+            class="link-thumb${thumbHiddenClass}"
+            src="${thumbSrc}"
+            alt="${escapeHtml(post.title)}"
+            loading="lazy"
+            data-og-url="${escapeHtml(webLink.href)}"
+            onerror="this.classList.add('hidden')"
+          />
           <div class="link-card-preview">
             <div class="link-meta">
               <span class="link-badge">🔗 Web Link</span>
@@ -224,7 +299,7 @@ const SlatePosts = (() => {
         post.type === "image" ? 4.2 :
         post.type === "pdf" ? 3.8 :
         post.type === "video" ? 2.6 :
-        post.type === "link" ? 1.8 : 1.4;
+        post.type === "link" ? 2.4 : 1.4;
       const commentWeight = ((post.comments && post.comments.length) || 0) * 0.25;
       colHeights[targetIdx] += mediaWeight + commentWeight;
     });
@@ -271,6 +346,7 @@ const SlatePosts = (() => {
         pinnedSection.classList.remove("hidden");
         renderMasonryColumns(pinnedContainer, pinnedPosts, isOwner);
         bindPostEventsIn(pinnedContainer);
+        hydrateLinkPreviews(pinnedContainer);
       } else {
         pinnedSection.classList.add("hidden");
         pinnedContainer.innerHTML = "";
@@ -290,6 +366,7 @@ const SlatePosts = (() => {
       } else {
         renderMasonryColumns(postsGrid, regularPosts, isOwner);
         bindPostEventsIn(postsGrid);
+        hydrateLinkPreviews(postsGrid);
       }
     }
   }

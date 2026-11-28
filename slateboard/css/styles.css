@@ -545,6 +545,35 @@ h1 {
   font-size: 16px;
 }
 
+.link-card-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+}
+
+.link-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.link-badge {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.link-domain {
+  font-size: 0.78rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 9px;
